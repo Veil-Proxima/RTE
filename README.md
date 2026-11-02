@@ -1,9 +1,10 @@
 # 🔄 The Round Table Exchange (RTE)
 ### *A Multi-Party Skill Barter Network with Graph-Based Cycle Matching*
 
-[![GitHub Pages](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-blue?style=for-the-badge&logo=github)](https://kryton-system.github.io/RoundTable/)
+[![GitHub Pages](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-blue?style=for-the-badge&logo=github)](https://veil-proxima.github.io/RTE/)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue?style=for-the-badge&logo=python)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100%2B-009688?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com)
+[![Testing](https://img.shields.io/badge/Testing-ISO%2FIEC%2FIEEE%2029119--3-green?style=for-the-badge)](SOFTWARE_TEST_REPORT.md)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
 ---
@@ -33,8 +34,8 @@ $$\text{User A (Teaches Python)} \xrightarrow{} \text{User B (Teaches Guitar)} \
 
 ### 1. Clone & Install Dependencies
 ```bash
-git clone https://github.com/Kryton-System/RoundTable.git
-cd RoundTable
+git clone https://github.com/Veil-Proxima/RTE.git
+cd RTE
 pip install -r backend/requirements.txt
 ```
 
@@ -65,38 +66,53 @@ All 13 unit and integration tests pass with comprehensive coverage across the en
 | `backend/workflow.py` | 37 | 6 | **84%** | Atomic multi-party consensus state machine & group voting |
 | **TOTAL (Backend Core)** | **536** | **13** | **98%** | **Full System Coverage (13/13 Tests Passing in 0.63s)** |
 
-📄 **1-Page System Brief PDF:** [`SYSTEM_OVERVIEW_AND_COVERAGE.pdf`](file:///e:/Dev%20Stuff/RoundTable/SYSTEM_OVERVIEW_AND_COVERAGE.pdf)
+📋 **Official Academic Test Documentation:**
+- 📄 **ISO/IEC/IEEE 29119-3 Test Report (Markdown):** [`SOFTWARE_TEST_REPORT.md`](SOFTWARE_TEST_REPORT.md)
+- 📑 **Formal Printable PDF:** [`docs/reports/SOFTWARE_TEST_REPORT.pdf`](docs/reports/SOFTWARE_TEST_REPORT.pdf)
+- 📝 **Formal Editable DOCX:** [`docs/reports/SOFTWARE_TEST_REPORT.docx`](docs/reports/SOFTWARE_TEST_REPORT.docx)
+- 📊 **1-Page System Brief PDF:** [`docs/reports/SYSTEM_OVERVIEW_AND_COVERAGE.pdf`](docs/reports/SYSTEM_OVERVIEW_AND_COVERAGE.pdf)
 
 ---
 
 ## 🌐 Live In-Browser Demo
 Visit the live interactive prototype on GitHub Pages:
-👉 **[https://kryton-system.github.io/RoundTable/](https://kryton-system.github.io/RoundTable/)**
+👉 **[https://veil-proxima.github.io/RTE/](https://veil-proxima.github.io/RTE/)**
 
 ---
 
 ## 🏛️ Project Structure
 
 ```
-RoundTable/
-├── backend/
-│   ├── app.py                 # FastAPI application, REST endpoints, and static mounts
-│   ├── models.py              # Pydantic models (User, Listing, TradeCycle, TradeProposal)
-│   ├── graph_engine.py        # Directed multigraph builder, Bounded-Depth DFS, ranking
-│   ├── workflow.py            # Group confirmation state machine
-│   ├── synthetic_data.py      # Dhaka presets, synthetic generator & benchmark suite
-│   ├── requirements.txt       # Dependencies
-│   └── test_engine.py         # Automated pytest test suite
-├── frontend/
-│   ├── index.html             # Semantic single-page dashboard layout
+RTE/
+├── backend/                       # Python FastAPI Backend & Algorithmic Core
+│   ├── app.py                     # REST endpoints, CORS & static application mounts
+│   ├── models.py                  # Pydantic v2 entities (User, SkillListing, TradeCycle)
+│   ├── graph_engine.py            # Directed multigraph, Bounded DFS, ranking heuristics
+│   ├── workflow.py                # Atomic multi-party consensus state machine
+│   ├── synthetic_data.py          # Dhaka population generator & benchmark harness
+│   ├── requirements.txt           # Python dependencies
+│   ├── test_api.py                # API integration test suite
+│   └── test_engine.py             # Algorithmic and state machine unit test suite
+├── frontend/                      # Web UI Client (Static / GitHub Pages Compatible)
+│   ├── index.html                 # Single-page dashboard layout
 │   ├── css/
-│   │   └── style.css          # Modern dark-mode glassmorphic design system
+│   │   └── style.css              # Dark-mode glassmorphic styling system
 │   └── js/
-│       ├── app.js             # Dual-mode REST client + in-browser fallback engine
-│       └── graph_viz.js       # Interactive Vis.js network visualizer
-├── docs/                      # Academic proposal documents & LaTeX sources
+│       ├── app.js                 # Dual-mode REST client + in-browser fallback engine
+│       └── graph_viz.js           # Vis.js ForceAtlas2 network visualizer
+├── docs/                          # Academic documentation & reports
+│   ├── reports/                   # Compiled PDF & Word reports (Test Report, Briefs)
+│   ├── frontend_doc_images/       # Architecture & UI wireframe diagrams
+│   └── proposal/                  # LaTeX project proposal source files
+├── scripts/                       # Report generation & build utilities
+│   ├── generate_test_report_pdf.py # Generates SOFTWARE_TEST_REPORT.pdf
+│   ├── generate_test_report_doc.py # Generates SOFTWARE_TEST_REPORT.docx
+│   └── generate_one_page_pdf.py   # Generates SYSTEM_OVERVIEW_AND_COVERAGE.pdf
+├── SOFTWARE_TEST_REPORT.md        # Comprehensive ISO/IEC/IEEE 29119-3 Test Report
+├── PROJECT.md                     # System architecture manual
+├── AGENT.md                       # AI migration & architecture guidelines
 └── .github/workflows/
-    └── deploy-pages.yml       # Automated GitHub Pages CI/CD workflow
+    └── deploy-pages.yml           # Automated GitHub Pages CI/CD workflow
 ```
 
 ---
@@ -105,4 +121,5 @@ RoundTable/
 - **Ahmmad Abdali Khan** — Lead Software Engineer (*UITS CSE, Dhaka, Bangladesh*)
 - **Sumaia Bintey Ismail** — Application & Systems Engineer (*UITS CSE, Dhaka, Bangladesh*)
 - **Alin** — Software Engineer (*UITS CSE, Dhaka, Bangladesh*)
-- **Supervised By:** Dr. Mahfida Amjad Dipa
+- **Supervised By:** Dr. Mahfida Amjad Dipa (Dept. of CSE, UITS)
+- **Course Instructor:** Al Imtiaz, Associate Professor (Dept. of CSE, UITS)
