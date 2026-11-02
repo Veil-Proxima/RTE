@@ -100,28 +100,6 @@ def generate_pdf():
         ('RIGHTPADDING', (0,0), (-1,-1), 5),
     ]))
     story.append(t_meta)
-    story.append(Spacer(1, 6))
-
-    # Document Control
-    story.append(Paragraph("Document Control", style_h2))
-    ctrl_data = [
-        [Paragraph("<b>Repository</b>", style_cell_bold), Paragraph("https://github.com/Veil-Proxima/RTE", style_cell)],
-        [Paragraph("<b>Version tested</b>", style_cell_bold), Paragraph("v1.0.1-test (commit 141fe65)", style_cell)],
-        [Paragraph("<b>Live site</b>", style_cell_bold), Paragraph("https://veil-proxima.github.io/RTE (Local API: http://127.0.0.1:8000)", style_cell)],
-        [Paragraph("<b>Report version</b>", style_cell_bold), Paragraph("1.0 (Baseline quality tier)", style_cell)],
-        [Paragraph("<b>Prepared by</b>", style_cell_bold), Paragraph("Ahammed Abdali Khan, Sumaia Bintey Ismail, Alin", style_cell)],
-        [Paragraph("<b>Reviewed by</b>", style_cell_bold), Paragraph("Ahammed Abdali Khan", style_cell)]
-    ]
-    t_ctrl = Table(ctrl_data, colWidths=[100, 440])
-    t_ctrl.setStyle(TableStyle([
-        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#CBD5E1')),
-        ('BACKGROUND', (0,0), (0,-1), colors.HexColor('#F1F5F9')),
-        ('TOPPADDING', (0,0), (-1,-1), 2),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 2),
-        ('LEFTPADDING', (0,0), (-1,-1), 5),
-        ('RIGHTPADDING', (0,0), (-1,-1), 5),
-    ]))
-    story.append(t_ctrl)
     story.append(Spacer(1, 8))
 
     # Section 1: Introduction

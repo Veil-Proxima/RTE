@@ -16,27 +16,6 @@
 
 ---
 
-## Document Control
-
-| Property | Value |
-|---|---|
-| **Repository** | [https://github.com/Veil-Proxima/RTE](https://github.com/Veil-Proxima/RTE) |
-| **Version Tested** | `v1.0.1-test` (commit `141fe65`) |
-| **Live Client Site** | [https://veil-proxima.github.io/RTE](https://veil-proxima.github.io/RTE) |
-| **Local API Gateway** | `http://127.0.0.1:8000` |
-| **Report Version** | `1.0` |
-| **Prepared By** | Ahammed Abdali Khan, Sumaia Bintey Ismail, Alin |
-| **Reviewed By** | Ahammed Abdali Khan |
-| **Target Quality Tier** | **Baseline (ISO/IEC/IEEE 29119-3 & ISO/IEC 25010)** |
-
-### Version History
-| Version | Date | Changes Summary |
-|---|---|---|
-| `1.0` | 02 Nov 2026 | Initial baseline report: 78 automated test cases, unit + integration suites, RTM traceability, 98% core backend coverage, NFR performance & security benchmarks, defect logs (DEF-01 to DEF-08). |
-| `1.1` | 05 Nov 2026 | Planned for Exp 10: Extended OWASP ZAP automated scanner, SonarCloud static security gates, and multi-browser Playwright matrix. |
-
----
-
 ## 1. Introduction
 
 ### 1.1 Purpose

@@ -154,26 +154,6 @@ def create_report_docx():
     ]
     create_table(meta_headers, meta_rows, [1.8, 5.2])
 
-    add_h2("Document Control")
-    doc_ctrl_headers = ["Parameter", "Configuration Reference"]
-    doc_ctrl_rows = [
-        ["Repository", "https://github.com/Veil-Proxima/RTE"],
-        ["Version tested", "v1.0.1-test (commit 141fe65)"],
-        ["Live site", "https://veil-proxima.github.io/RTE (Local API: http://127.0.0.1:8000)"],
-        ["Report version", "1.0"],
-        ["Prepared by", "Ahammed Abdali Khan, Sumaia Bintey Ismail, Alin"],
-        ["Reviewed by", "Ahammed Abdali Khan"],
-        ["Target tier", "Baseline (ISO/IEC/IEEE 29119-3 & ISO/IEC 25010 compliant)"]
-    ]
-    create_table(doc_ctrl_headers, doc_ctrl_rows, [1.8, 5.2])
-
-    vers_headers = ["Version", "Date", "Changes"]
-    vers_rows = [
-        ["1.0", "02 Nov 2026", "First version: 78 automated test cases, unit + integration suites, RTM traceability, 98% backend coverage, NFR performance & security checks, defect log."],
-        ["1.1", "05 Nov 2026", "Planned for Exp 10: OWASP ZAP automated scanner, SonarCloud static analysis gates, and multi-browser Playwright matrix."]
-    ]
-    create_table(vers_headers, vers_rows, [0.8, 1.2, 5.0])
-
     add_h1("1. Introduction")
     add_h2("1.1 Purpose")
     add_p("This report covers how we tested RoundTable Exchange (RTE) at release version v1.0.1-test: what we tested, the applied verification methodologies, empirical execution results, code coverage telemetry, defect logs, and whether the system is qualified for laboratory release.")

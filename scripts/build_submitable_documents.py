@@ -1,4 +1,5 @@
 import os
+import shutil
 import docx
 from docx.shared import Inches, Pt, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH
@@ -6,14 +7,15 @@ from docx.enum.section import WD_SECTION_START
 from docx.oxml import OxmlElement, parse_xml
 from docx.oxml.ns import qn, nsdecls
 
-from reportlab.lib.pagesizes import letter, A4
+from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
+from reportlab.lib.units import inch
 from reportlab.platypus import (
-    BaseDocTemplate, PageTemplate, Frame, NextPageTemplate, SimpleDocTemplate,
-    Paragraph, Spacer, Table, TableStyle, HRFlowable, PageBreak, Image as RLImage, KeepTogether
+    BaseDocTemplate, PageTemplate, Frame, NextPageTemplate,
+    Paragraph, Spacer, Table, TableStyle, PageBreak, Image as RLImage
 )
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT, TA_JUSTIFY
+from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY, TA_LEFT, TA_RIGHT
 import pypdf
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -27,13 +29,44 @@ ROOT_DOCX = os.path.join(BASE_DIR, "docs", "SOFTWARE_TEST_REPORT.docx")
 OUT_PDF = os.path.join(REPORTS_DIR, "SOFTWARE_TEST_REPORT_SUBMISSION.pdf")
 ROOT_PDF = os.path.join(BASE_DIR, "docs", "SOFTWARE_TEST_REPORT.pdf")
 
+# Shared Curated RTM Dataset (Fits completely inside Page 3)
+RTM_ROWS = [
+    ["FR-01", "User registration with Dhaka coordinate profiles", "TC-01, TC-02", "Pass"],
+    ["FR-03", "User deletion with cascading store cleanup", "TC-06, TC-07", "Pass"],
+    ["FR-04", "Input validation on user profile coordinates", "TC-08, TC-09", "Pass"],
+    ["FR-06", "Skill offer listing registration & category", "TC-11, TC-12", "Pass"],
+    ["FR-08", "Prevention of identical offer/want on user", "TC-15", "Pass"],
+    ["FR-10", "Case-insensitive trimmed skill matching", "TC-18, TC-19", "Pass"],
+    ["FR-11", "MultiDiGraph node synthesis from users", "TC-20, TC-21", "Pass"],
+    ["FR-12", "Directed edge insertion matching offer->want", "TC-22, TC-23", "Pass"],
+    ["FR-14", "Multi-edge support between users", "TC-25", "Pass"],
+    ["FR-15", "Bounded DFS 3-party loop detection (k=3)", "TC-26, TC-27", "Pass"],
+    ["FR-16", "Bounded DFS 4-party loop detection (k=4)", "TC-28, TC-29", "Pass"],
+    ["FR-17", "Strict cycle length bounding (min_k, max_k)", "TC-30, TC-31", "Pass"],
+    ["FR-18", "Rotational canonical cycle deduplication", "TC-32, TC-33", "Pass"],
+    ["FR-19", "Zero false-positive cycles on DAG topologies", "TC-34, TC-35", "Pass"],
+    ["FR-22", "Haversine geodesic distance calculation", "TC-38, TC-39", "Pass"],
+    ["FR-24", "Weekly availability grid modeling (7x24)", "TC-42", "Pass"],
+    ["FR-25", "Mutual schedule overlap set intersection", "TC-43, TC-44", "Pass"],
+    ["FR-27", "Parametric composite scoring with alpha", "TC-46, TC-47", "Pass"],
+    ["FR-29", "Trade proposal initialization & UUID", "TC-49, TC-50", "Pass"],
+    ["FR-31", "Unanimous acceptance transition to Locked", "TC-53, TC-54", "Pass"],
+    ["FR-32", "Single-veto immediate transition to Rejected", "TC-55, TC-56", "Pass"],
+    ["FR-34", "Synthetic Dhaka population generator", "TC-59, TC-60", "Pass"],
+    ["FR-41", "Standalone client JavaScript DFS engine", "TC-69, TC-70", "Pass"],
+    ["FR-42", "JavaScript Haversine & schedule score parity", "TC-71, TC-72", "Pass"],
+    ["NFR-01", "Algorithmic matching < 50ms for N <= 100", "PT-01", "Pass"],
+    ["NFR-04", "Dual-engine mathematical score parity (94.7%)", "TC-74", "Pass"]
+]
+
+
 # ==============================================================================
-# 1. GENERATE WORD DOCUMENT (.DOCX) - STRICT TIMES NEW ROMAN, PURE BLACK, NO CUTOFFS
+# 1. GENERATE WORD DOCUMENT (.DOCX) - STRICT TIMES NEW ROMAN, PURE BLACK, +2 FONT
 # ==============================================================================
 def generate_word_document():
     doc = docx.Document()
     
-    # Page Setup: Standard A4, Cover page has symmetric 1.0 in margins for perfect horizontal centering
+    # Section 0: Cover page with symmetric 1.0 in margins for perfect horizontal centering
     section = doc.sections[0]
     section.page_width = Inches(8.27)
     section.page_height = Inches(11.69)
@@ -51,18 +84,17 @@ def generate_word_document():
         except Exception:
             pass
 
-    def apply_times(run, size=11, bold=False, italic=False):
+    def apply_times(run, size=13, bold=False, italic=False):
         run.font.name = "Times New Roman"
         run.font.size = Pt(size)
         run.bold = bold
         run.italic = italic
-        run.font.color.rgb = RGBColor(0, 0, 0) # Strictly NO color (Pure Black)
-        # Ensure underlying rFonts XML is also strictly Times New Roman
+        run.font.color.rgb = RGBColor(0, 0, 0)
         rPr = run._r.get_or_add_rPr()
         rFonts = parse_xml(r'<w:rFonts %s w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>' % nsdecls('w'))
         rPr.append(rFonts)
 
-    def add_para(text="", align=WD_ALIGN_PARAGRAPH.LEFT, space_before=2, space_after=4, size=11, bold=False, italic=False, keep_with_next=False):
+    def add_para(text="", align=WD_ALIGN_PARAGRAPH.LEFT, space_before=2, space_after=3, size=13, bold=False, italic=False, keep_with_next=False):
         p = doc.add_paragraph()
         p.alignment = align
         p.paragraph_format.space_before = Pt(space_before)
@@ -76,10 +108,10 @@ def generate_word_document():
         return p
 
     def add_heading_1(text):
-        return add_para(text, align=WD_ALIGN_PARAGRAPH.LEFT, space_before=14, space_after=4, size=14, bold=True, keep_with_next=True)
+        return add_para(text, align=WD_ALIGN_PARAGRAPH.LEFT, space_before=8, space_after=3, size=16, bold=True, keep_with_next=True)
 
     def add_heading_2(text):
-        return add_para(text, align=WD_ALIGN_PARAGRAPH.LEFT, space_before=10, space_after=3, size=12, bold=True, keep_with_next=True)
+        return add_para(text, align=WD_ALIGN_PARAGRAPH.LEFT, space_before=6, space_after=2, size=14, bold=True, keep_with_next=True)
 
     def add_table_strict(headers, rows, col_widths=None):
         table = doc.add_table(rows=len(rows) + 1, cols=len(headers))
@@ -91,15 +123,14 @@ def generate_word_document():
             hdr_cells[i].text = h_text
             p = hdr_cells[i].paragraphs[0]
             p.alignment = WD_ALIGN_PARAGRAPH.LEFT
-            p.paragraph_format.space_before = Pt(2)
-            p.paragraph_format.space_after = Pt(2)
+            p.paragraph_format.space_before = Pt(1.5)
+            p.paragraph_format.space_after = Pt(1.5)
             if p.runs:
-                apply_times(p.runs[0], size=9.5, bold=True)
-            # Standard light shading for table header
+                apply_times(p.runs[0], size=11.5, bold=True)
             shd = parse_xml(r'<w:shd %s w:fill="F2F2F2"/>' % nsdecls('w'))
             hdr_cells[i]._tc.get_or_add_tcPr().append(shd)
 
-        # Set Header Repeat Across Pages (<w:tblHeader/>)
+        # Enforce header repeat and prevent row splitting
         hdr_tr = table.rows[0]._tr.get_or_add_trPr()
         hdr_tr.append(parse_xml(r'<w:tblHeader %s/>' % nsdecls('w')))
         hdr_tr.append(parse_xml(r'<w:cantSplit %s/>' % nsdecls('w')))
@@ -107,7 +138,6 @@ def generate_word_document():
         # Data Rows
         for r_idx, r_data in enumerate(rows):
             row = table.rows[r_idx + 1]
-            # Enforce Row Does NOT Split Across Pages (<w:cantSplit/>)
             trPr = row._tr.get_or_add_trPr()
             trPr.append(parse_xml(r'<w:cantSplit %s/>' % nsdecls('w')))
             
@@ -116,20 +146,18 @@ def generate_word_document():
                 cell.text = str(val)
                 p = cell.paragraphs[0]
                 p.alignment = WD_ALIGN_PARAGRAPH.LEFT
-                p.paragraph_format.space_before = Pt(1.5)
-                p.paragraph_format.space_after = Pt(1.5)
+                p.paragraph_format.space_before = Pt(1)
+                p.paragraph_format.space_after = Pt(1)
                 if p.runs:
                     txt = str(val)
-                    bold = ("PASS" in txt or "Pass" in txt or "100%" in txt or "98%" in txt or "MET" in txt or "Closed" in txt)
-                    apply_times(p.runs[0], size=9, bold=bold)
+                    bold = any(k in txt for k in ["PASS", "Pass", "100%", "98%", "MET", "Closed"])
+                    apply_times(p.runs[0], size=11, bold=bold)
 
-        # Apply Column Widths
         if col_widths:
             for r in table.rows:
                 for idx, w in enumerate(col_widths):
                     r.cells[idx].width = Inches(w)
 
-        # Add table borders
         tblPr = table._tbl.tblPr
         borders = parse_xml(r'''
             <w:tblBorders %s>
@@ -143,40 +171,38 @@ def generate_word_document():
         ''' % nsdecls('w'))
         tblPr.append(borders)
 
-        doc.add_paragraph().paragraph_format.space_after = Pt(4)
+        doc.add_paragraph().paragraph_format.space_after = Pt(2)
         return table
 
-    # ---------------- COVER PAGE (PROPORTIONALLY BALANCED VERTICAL SPACING) ----------------
-    add_para("UNIVERSITY OF INFORMATION TECHNOLOGY AND SCIENCES (UITS)", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=16, space_after=3, size=13, bold=True)
-    add_para("DEPARTMENT OF COMPUTER SCIENCE AND ENGINEERING", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=0, space_after=2, size=12, bold=True)
-    add_para("DHAKA, BANGLADESH", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=0, space_after=32, size=10, bold=False)
+    # ---------------- PAGE 1: COVER PAGE (PROPORTIONALLY BALANCED) ----------------
+    add_para("UNIVERSITY OF INFORMATION TECHNOLOGY AND SCIENCES (UITS)", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=16, space_after=3, size=15, bold=True)
+    add_para("DEPARTMENT OF COMPUTER SCIENCE AND ENGINEERING", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=0, space_after=2, size=14, bold=True)
+    add_para("DHAKA, BANGLADESH", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=0, space_after=30, size=12, bold=False)
 
-    # University Logo
     if os.path.exists(LOGO_PATH):
         p_logo = doc.add_paragraph()
         p_logo.alignment = WD_ALIGN_PARAGRAPH.CENTER
         p_logo.paragraph_format.space_before = Pt(4)
-        p_logo.paragraph_format.space_after = Pt(34)
+        p_logo.paragraph_format.space_after = Pt(30)
         p_logo.add_run().add_picture(LOGO_PATH, width=Inches(1.8))
 
-    add_para("CSE 416: Software Project Design and Development (Lab)", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=4, space_after=6, size=11, bold=True)
-    add_para("SOFTWARE TEST REPORT", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=4, space_after=10, size=18, bold=True)
-    
-    add_para("The Round Table Exchange (RTE): A Multi-Party Skill Barter Network with Graph-Based Cycle Matching", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=4, space_after=42, size=12, bold=True)
+    add_para("CSE 416: Software Project Design and Development (Lab)", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=4, space_after=6, size=13, bold=True)
+    add_para("SOFTWARE TEST REPORT", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=4, space_after=10, size=20, bold=True)
+    add_para("The Round Table Exchange (RTE): A Multi-Party Skill Barter Network with Graph-Based Cycle Matching", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=4, space_after=38, size=14, bold=True)
 
-    add_para("Submitted By:", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=4, space_after=3, size=11, bold=True)
-    add_para("Ahmmad Abdali Khan (ID: 0432320005101118)", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=2, space_after=2, size=10.5)
-    add_para("Sumaia Bintey Ismail (ID: 0432320005101103)", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=2, space_after=2, size=10.5)
-    add_para("Alin (ID: 0432320005101131)", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=2, space_after=2, size=10.5)
-    add_para("Batch: CSE-54, Section: 7B", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=2, space_after=34, size=9.5, italic=True)
+    add_para("Submitted By:", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=4, space_after=3, size=13, bold=True)
+    add_para("Ahmmad Abdali Khan (ID: 0432320005101118)", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=2, space_after=2, size=12.5)
+    add_para("Sumaia Bintey Ismail (ID: 0432320005101103)", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=2, space_after=2, size=12.5)
+    add_para("Alin (ID: 0432320005101131)", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=2, space_after=2, size=12.5)
+    add_para("Batch: CSE-54, Section: 7B", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=2, space_after=30, size=11.5, italic=True)
 
-    add_para("Submitted To:", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=4, space_after=3, size=11, bold=True)
-    add_para("Dr. Mahfida Amjad Dipa", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=2, space_after=2, size=10.5, bold=True)
-    add_para("Assistant Professor", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=2, space_after=2, size=10)
-    add_para("Department of Computer Science and Engineering", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=2, space_after=2, size=10)
-    add_para("University of Information Technology and Sciences (UITS)", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=2, space_after=54, size=10)
+    add_para("Submitted To:", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=4, space_after=3, size=13, bold=True)
+    add_para("Dr. Mahfida Amjad Dipa", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=2, space_after=2, size=12.5, bold=True)
+    add_para("Assistant Professor", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=2, space_after=2, size=12)
+    add_para("Department of Computer Science and Engineering", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=2, space_after=2, size=12)
+    add_para("University of Information Technology and Sciences (UITS)", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=2, space_after=48, size=12)
 
-    add_para("Date of Submission: 02 November 2026", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=6, space_after=0, size=10)
+    add_para("Date of Submission: 02 November 2026", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=6, space_after=0, size=12)
 
     # Transition to Document Body Section with Academic Binding Margins (Left 1.25 in, Right 1.0 in)
     body_section = doc.add_section(WD_SECTION_START.NEW_PAGE)
@@ -189,96 +215,44 @@ def generate_word_document():
     body_section.header.is_linked_to_previous = False
     body_section.footer.is_linked_to_previous = False
     
-    # Body Footer with Times New Roman and page numbers
+    # Body Footer: JUST the page number
     b_footer = body_section.footer
     b_f_p = b_footer.paragraphs[0]
     b_f_p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-    b_f_run = b_f_p.add_run("RoundTable Exchange (RTE) | Software Test Report (ISO/IEC/IEEE 29119-3)  —  Page ")
-    b_f_run.font.name = "Times New Roman"
-    b_f_run.font.size = Pt(9)
-    b_f_run.font.color.rgb = RGBColor(0, 0, 0)
-    b_fld_xml = parse_xml(r'<w:fldSimple %s w:instr="PAGE"/>' % nsdecls('w'))
-    b_f_p._p.append(b_fld_xml)
+    fld_xml = parse_xml(r'<w:fldSimple %s w:instr="PAGE"/>' % nsdecls('w'))
+    b_f_p._p.append(fld_xml)
 
-    # ---------------- DOCUMENT CONTROL ----------------
-    add_heading_1("Document Control")
-    add_table_strict(
-        ["Parameter", "Configuration Reference"],
-        [
-            ["Repository", "https://github.com/Veil-Proxima/RTE"],
-            ["Version Tested", "v1.0.1-test (commit 141fe65)"],
-            ["Live Client Deployment", "https://veil-proxima.github.io/RTE (Local API: http://127.0.0.1:8000)"],
-            ["Report Version", "1.0 (Baseline quality tier)"],
-            ["Prepared By", "Ahammed Abdali Khan, Sumaia Bintey Ismail, Alin"],
-            ["Reviewed By", "Ahammed Abdali Khan"],
-            ["Target Quality Tier", "Baseline (ISO/IEC/IEEE 29119-3 & ISO/IEC 25010 compliant)"]
-        ],
-        [1.8, 4.2]
-    )
-
-    add_heading_2("Document Revision History")
-    add_table_strict(
-        ["Version", "Date", "Summary of Verification Changes"],
-        [
-            ["1.0", "02 Nov 2026", "First comprehensive baseline report: 78 automated test cases, unit and integration suites, RTM traceability, 98% core backend coverage, NFR performance benchmarks, and defect log."],
-            ["1.1", "05 Nov 2026", "Planned for Exp 10: Extended OWASP ZAP automated scanner, SonarCloud static analysis gates, and multi-browser Playwright matrix."]
-        ],
-        [0.8, 1.2, 4.0]
-    )
-
-    # ---------------- CHAPTER 1 ----------------
+    # ---------------- PAGE 2: INTRODUCTION, SCOPE, ENVIRONMENT & EXIT CRITERIA ----------------
     add_heading_1("1. Introduction & Overview")
-    add_heading_2("1.1 Purpose")
-    add_para("This report provides formal, verifiable test documentation for RoundTable Exchange (RTE) at release version v1.0.1-test. It specifies the verification plan, test environment, test design specifications, requirement traceability, empirical execution results, code coverage telemetry, defect logs, and release readiness in strict compliance with ISO/IEC/IEEE 29119-3 and ISO/IEC 25010.")
+    add_para("1.1 Purpose & Product Architecture: This report details the formal verification of RoundTable Exchange (RTE) v1.0.1-test based on ISO/IEC/IEEE 29119-3 and ISO/IEC 25010. RTE is a circular skill barter platform eliminating the 'Double Coincidence of Wants' by discovering closed trade cycles of length k in {2, 3, 4} on a directed multigraph using Bounded DFS. Discovered cycles are evaluated via a composite scoring function: S(C) = alpha * S_geo(C) + (1 - alpha) * S_sched(C), balancing Haversine proximity with weekly schedules, with unanimous single-veto consensus.")
 
-    add_heading_2("1.2 Product Overview")
-    add_para("RoundTable Exchange (RTE) is a multi-party algorithmic bartering system designed to eliminate the classic economic hurdle known as the 'Double Coincidence of Wants'. Traditional exchange systems require direct 1-to-1 matching or rely on inflationary fiat or time tokens. In contrast, RTE models participant competencies as a directed multigraph and executes a Bounded-Depth Depth-First Search (Bounded DFS) algorithm to uncover closed barter cycles of length k in {2, 3, 4}. Discovered trade cycles are scored using a composite multi-signal ranking function: S(C) = alpha * S_geo(C) + (1 - alpha) * S_sched(C), balancing Haversine geographic proximity with weekly availability schedule overlap. Multi-party agreements are coordinated by an atomic state machine enforcing unanimous single-veto consensus.")
-
-    add_heading_2("1.3 Scope of Testing")
+    add_heading_2("1.2 Scope of Testing")
     add_table_strict(
         ["Subsystem / Functional Area", "SRS Requirements", "Testing Levels"],
         [
             ["User onboarding & Dhaka coordinate profiles", "FR-01 to FR-05, FR-24", "Unit, Integration"],
-            ["Skill taxonomy & multi-listing management", "FR-06 to FR-10", "Unit, Integration"],
-            ["Directed Multigraph construction & edges", "FR-11 to FR-14", "Unit, Integration"],
-            ["Bounded DFS cycle discovery (k in [2, 4])", "FR-15 to FR-18", "Unit, Integration, Algorithmic"],
-            ["Rotational cycle deduplication & DAG safety", "FR-19 to FR-21", "Unit, Algorithmic"],
-            ["Haversine geodesic distance ranking", "FR-22 to FR-23", "Unit, Integration"],
-            ["Weekly availability grid set intersection", "FR-24 to FR-26", "Unit, Integration"],
-            ["Dynamic composite scoring & real-time alpha", "FR-27 to FR-28", "Unit, Client Engine"],
+            ["Skill taxonomy & directed multigraph construction", "FR-06 to FR-14", "Unit, Integration"],
+            ["Bounded DFS cycle discovery (k in [2, 4])", "FR-15 to FR-21", "Unit, Algorithmic"],
+            ["Haversine proximity & schedule overlap scoring", "FR-22 to FR-28", "Unit, Integration"],
             ["Atomic 5-stage proposal state machine", "FR-29 to FR-33", "Unit, Integration"],
-            ["Synthetic population generator & scaling", "FR-34 to FR-36", "Performance, Load"],
-            ["REST API gateway contract validation", "FR-37 to FR-40", "Integration, Security"],
-            ["Client-side standalone JavaScript engine", "FR-41 to FR-43", "Client Unit, Parity"],
-            ["Responsive ForceAtlas2 physics canvas", "FR-44 to FR-46", "UI, Cross-Browser"],
-            ["Performance, Security, and Code Coverage", "NFR-01 to NFR-16", "Perf, Sec, Coverage"]
+            ["Synthetic scaling, REST API & client parity", "FR-34 to FR-46, NFR-01..16", "Perf, Parity, Security"]
         ],
-        [2.3, 1.9, 1.8]
+        [2.5, 2.0, 1.5]
     )
 
-    doc.add_page_break()
-
-    # ---------------- CHAPTER 2 ----------------
     add_heading_1("2. Test Environment & Strategy")
     add_table_strict(
         ["Component", "Specification & Tooling Configuration"],
         [
-            ["Host Operating System", "Windows 11 Enterprise (local test harness); Linux x86_64 (CI container)"],
-            ["Language Runtimes", "Python 3.15.0 (64-bit AMD64), Node.js v24.22.1"],
-            ["Backend Frameworks", "FastAPI 0.115, Starlette, Pydantic v2.10, Uvicorn 0.34, NetworkX 3.4"],
-            ["Test Runners & Libraries", "pytest 9.1.1, pytest-cov 6.0, coverage.py 7.6, anyio 4.15, Node test runner"],
-            ["Test Store", "In-memory Multigraph and clean dictionary store; fresh instances on every test run"],
-            ["Browsers Tested", "Google Chrome 131, Microsoft Edge 131 desktop, responsive mobile viewports"]
+            ["Host OS & CI Container", "Windows 11 Enterprise (local test harness); Linux x86_64 (CI container)"],
+            ["Language Runtimes & Core", "Python 3.15.0 (64-bit AMD64), Node.js v24.22.1, FastAPI 0.115, NetworkX 3.4"],
+            ["Test Harness & Telemetry", "pytest 9.1.1, pytest-cov 6.0, coverage.py 7.6, anyio 4.15, Node test runner"],
+            ["Browsers Verified", "Google Chrome 131, Microsoft Edge 131 desktop, responsive mobile viewports"]
         ],
-        [1.8, 4.2]
+        [2.0, 4.0]
     )
 
-    add_heading_2("2.1 Test Execution Instructions")
-    add_para("1. python -m pytest -v (Executes complete automated unit and integration suite)")
-    add_para("2. python -m coverage run --source=backend -m pytest && python -m coverage report -m")
-    add_para("3. node -c frontend/js/app.js (Verifies standalone client-side JavaScript engine syntax)")
-
-    add_heading_2("2.2 Exit Criteria Evaluation (Baseline Quality Tier)")
+    add_heading_2("2.1 Exit Criteria Evaluation (Baseline Quality Tier)")
     add_table_strict(
         ["Evaluation Criterion", "Target Metric", "Achieved Result", "Status"],
         [
@@ -286,73 +260,25 @@ def generate_word_document():
             ["P1 Critical Test Pass Rate", "100%", "100% (52 / 52 P1 cases passed)", "Pass"],
             ["Core Backend Code Coverage", ">= 85%", "98% (523 / 536 statements)", "Pass"],
             ["Open Severity 1 (S1) Defects", "0", "0 (DEF-01 resolved in 141fe65)", "Pass"],
-            ["Open Severity 2 (S2) Defects", "0", "0", "Pass"],
             ["Dual-Engine Mathematical Parity", "100%", "100% Identical Output (94.7%)", "Pass"]
         ],
-        [2.3, 1.2, 1.8, 0.7]
+        [2.4, 1.0, 1.8, 0.8]
     )
 
     doc.add_page_break()
 
-    # ---------------- CHAPTER 3: RTM ----------------
+    # ---------------- PAGE 3: REQUIREMENTS TRACEABILITY MATRIX (RTM) ----------------
     add_heading_1("3. Requirements Traceability Matrix (RTM)")
-    add_para("The Requirements Traceability Matrix maps all system requirements to test cases and empirical execution outcomes.")
+    add_para("The Requirements Traceability Matrix maps core functional requirements to test cases and empirical execution outcomes.")
     add_table_strict(
         ["Req ID", "Functional Requirement Description", "Test Case IDs", "Status"],
-        [
-            ["FR-01", "User registration with Dhaka coordinate profiles", "TC-01, TC-02, TC-03", "Pass"],
-            ["FR-02", "User listing query with metadata retrieval", "TC-04, TC-05", "Pass"],
-            ["FR-03", "User deletion with cascading store cleanup", "TC-06, TC-07", "Pass"],
-            ["FR-04", "Input validation on user profile coordinates", "TC-08, TC-09", "Pass"],
-            ["FR-05", "HTTP 404 response on non-existent entities", "TC-10", "Pass"],
-            ["FR-06", "Skill offer listing registration & category", "TC-11, TC-12", "Pass"],
-            ["FR-07", "Skill want request registration & validation", "TC-13, TC-14", "Pass"],
-            ["FR-08", "Prevention of identical offer/want on user", "TC-15", "Pass"],
-            ["FR-09", "Skill taxonomy & location metadata endpoint", "TC-16, TC-17", "Pass"],
-            ["FR-10", "Case-insensitive trimmed skill matching", "TC-18, TC-19", "Pass"],
-            ["FR-11", "MultiDiGraph node synthesis from users", "TC-20, TC-21", "Pass"],
-            ["FR-12", "Directed edge insertion matching offer->want", "TC-22, TC-23", "Pass"],
-            ["FR-13", "Edge attributes storing transferred skill", "TC-24", "Pass"],
-            ["FR-14", "Multi-edge support between users", "TC-25", "Pass"],
-            ["FR-15", "Bounded DFS 3-party loop detection (k=3)", "TC-26, TC-27", "Pass"],
-            ["FR-16", "Bounded DFS 4-party loop detection (k=4)", "TC-28, TC-29", "Pass"],
-            ["FR-17", "Strict cycle length bounding (min_k, max_k)", "TC-30, TC-31", "Pass"],
-            ["FR-18", "Rotational canonical cycle deduplication", "TC-32, TC-33", "Pass"],
-            ["FR-19", "Zero false-positive cycles on DAG topologies", "TC-34, TC-35", "Pass"],
-            ["FR-20", "Early DFS recursion pruning (> max_k)", "TC-36", "Pass"],
-            ["FR-21", "Cycle discovery limit safety cap (100 max)", "TC-37", "Pass"],
-            ["FR-22", "Haversine geodesic distance calculation", "TC-38, TC-39", "Pass"],
-            ["FR-23", "Proximity score exponential decay modeling", "TC-40, TC-41", "Pass"],
-            ["FR-24", "Weekly availability grid modeling (7x24)", "TC-42", "Pass"],
-            ["FR-25", "Mutual schedule overlap set intersection", "TC-43, TC-44", "Pass"],
-            ["FR-26", "Normalized schedule overlap scoring (hrs/6)", "TC-45", "Pass"],
-            ["FR-27", "Parametric composite scoring with alpha", "TC-46, TC-47", "Pass"],
-            ["FR-28", "Descending composite score sorting", "TC-48", "Pass"],
-            ["FR-29", "Trade proposal initialization & UUID", "TC-49, TC-50", "Pass"],
-            ["FR-30", "Multi-party consensus tracking (Pending/Accepted)", "TC-51, TC-52", "Pass"],
-            ["FR-31", "Unanimous acceptance transition to Locked", "TC-53, TC-54", "Pass"],
-            ["FR-32", "Single-veto immediate transition to Rejected", "TC-55, TC-56", "Pass"],
-            ["FR-33", "Response rejection on invalid proposal ID", "TC-57, TC-58", "Pass"],
-            ["FR-34", "Synthetic Dhaka population generator", "TC-59, TC-60", "Pass"],
-            ["FR-35", "Empirical scalability benchmark runner", "TC-61, TC-62", "Pass"],
-            ["FR-36", "Graph build vs DFS cycle search telemetry", "TC-63", "Pass"],
-            ["FR-37", "REST API /api/meta endpoint", "TC-64", "Pass"],
-            ["FR-38", "REST API /api/match/run endpoint", "TC-65, TC-66", "Pass"],
-            ["FR-39", "REST API /api/match/cycles cached query", "TC-67", "Pass"],
-            ["FR-40", "REST API /api/reset state restore endpoint", "TC-68", "Pass"],
-            ["FR-41", "Standalone client JavaScript DFS engine", "TC-69, TC-70", "Pass"],
-            ["FR-42", "JavaScript Haversine & schedule score parity", "TC-71, TC-72", "Pass"],
-            ["FR-43", "Real-time client alpha slider re-scoring", "TC-73", "Pass"],
-            ["NFR-01", "Algorithmic matching < 50ms for N <= 100", "PT-01", "Pass"],
-            ["NFR-02", "REST API response time < 100ms under load", "PT-02, PT-03", "Pass"],
-            ["NFR-04", "Dual-engine mathematical score parity (94.7%)", "TC-74", "Pass"]
-        ],
+        RTM_ROWS,
         [0.8, 3.2, 1.4, 0.6]
     )
 
     doc.add_page_break()
 
-    # ---------------- CHAPTER 4: EXECUTION & COVERAGE ----------------
+    # ---------------- PAGE 4: EXECUTION & COVERAGE ----------------
     add_heading_1("4. Execution Results & Code Coverage Telemetry")
     add_heading_2("4.1 Automated Test Execution Summary")
     add_table_strict(
@@ -370,16 +296,16 @@ def generate_word_document():
     add_table_strict(
         ["Module File", "Statements", "Missing", "Coverage (%)", "Verified Functional Scope"],
         [
-            ["backend/app.py", "140", "0", "100%", "FastAPI REST routes, schema validation & static mounts"],
-            ["backend/models.py", "52", "0", "100%", "Pydantic domain entities (User, SkillListing, TradeCycle)"],
-            ["backend/synthetic_data.py", "54", "0", "100%", "Dhaka demographic generator & scaling benchmarks"],
-            ["backend/test_api.py", "74", "0", "100%", "Full integration suite for HTTP GET/POST/DELETE paths"],
-            ["backend/test_engine.py", "70", "0", "100%", "Algorithmic DFS bounds, DAG acyclic checks, consensus"],
-            ["backend/graph_engine.py", "109", "7", "94%", "MultiDiGraph, bounded DFS cycle discovery & scoring"],
-            ["backend/workflow.py", "37", "6", "84%", "Atomic multi-party proposal state transitions & voting"],
-            ["TOTAL SYSTEM CORE", "536", "13", "98%", "Full System Automated Verification (Target >= 85%)"]
+            ["backend/app.py", "140", "0", "100%", "FastAPI REST routes & static mounts"],
+            ["backend/models.py", "52", "0", "100%", "Pydantic domain entities (User, SkillListing)"],
+            ["backend/synthetic_data.py", "54", "0", "100%", "Dhaka demographic generator & scaling"],
+            ["backend/test_api.py", "74", "0", "100%", "Full integration suite for REST routes"],
+            ["backend/test_engine.py", "70", "0", "100%", "Algorithmic DFS bounds & consensus"],
+            ["backend/graph_engine.py", "109", "7", "94%", "MultiDiGraph, DFS cycle discovery & scoring"],
+            ["backend/workflow.py", "37", "6", "84%", "Atomic proposal state transitions & voting"],
+            ["TOTAL SYSTEM CORE", "536", "13", "98%", "Full System Verification (Target >= 85%)"]
         ],
-        [1.6, 0.8, 0.7, 1.0, 1.9]
+        [1.8, 0.8, 0.6, 1.0, 1.8]
     )
 
     add_heading_2("4.3 Scalability & Performance Benchmarks")
@@ -398,7 +324,7 @@ def generate_word_document():
 
     doc.add_page_break()
 
-    # ---------------- CHAPTER 5: DEFECT REPORT ----------------
+    # ---------------- PAGE 5: DEFECT REPORT, CONTRIBUTIONS & SIGN-OFF ----------------
     add_heading_1("5. Defect Log & Main Bug Fixes")
     add_table_strict(
         ["ID", "Req Ref", "Problem Description", "Sev", "Status", "Resolution Reference"],
@@ -438,10 +364,9 @@ def generate_word_document():
 
 
 # ==============================================================================
-# 2. GENERATE PDF DOCUMENT (.PDF) - STRICT TIMES-ROMAN, PURE BLACK, NO CUTOFFS
+# 2. GENERATE PDF DOCUMENT (.PDF) - STRICT TIMES-ROMAN, PURE BLACK, +2 FONT
 # ==============================================================================
 def generate_pdf_document():
-    from reportlab.lib.units import inch
     page_w, page_h = A4
 
     # Template 1: Cover Page with symmetric 1.0 in margins for perfect horizontal centering
@@ -463,10 +388,10 @@ def generate_pdf_document():
 
     def draw_body_footer(canvas, d):
         canvas.saveState()
-        canvas.setFont("Times-Roman", 9)
+        canvas.setFont("Times-Roman", 11)
         canvas.setFillColor(colors.black)
-        footer_text = f"RoundTable Exchange (RTE) | Software Test Report (ISO/IEC/IEEE 29119-3)  —  Page {d.page}"
-        canvas.drawRightString(page_w - 1.0 * inch, 0.6 * inch, footer_text)
+        # JUST the page number
+        canvas.drawRightString(page_w - 1.0 * inch, 0.6 * inch, f"{d.page}")
         canvas.restoreState()
 
     body_template = PageTemplate(id='Body', frames=[body_frame], onPage=draw_body_footer)
@@ -475,67 +400,70 @@ def generate_pdf_document():
 
     styles = getSampleStyleSheet()
 
-    # Custom styles - Strictly Times-Roman font family, strictly pure black text
+    # Custom styles - Strictly Times-Roman font family, strictly pure black text, +2pt across all styles
     style_center_bold = ParagraphStyle(
         'CoverCenterBold', parent=styles['Normal'],
-        fontName='Times-Bold', fontSize=12, leading=15,
+        fontName='Times-Bold', fontSize=14, leading=18,
         alignment=TA_CENTER, textColor=colors.black
     )
     style_center = ParagraphStyle(
         'CoverCenter', parent=styles['Normal'],
-        fontName='Times-Roman', fontSize=10.5, leading=14,
+        fontName='Times-Roman', fontSize=12.5, leading=16,
+        alignment=TA_CENTER, textColor=colors.black
+    )
+    style_center_it = ParagraphStyle(
+        'CoverCenterIt', parent=styles['Normal'],
+        fontName='Times-Italic', fontSize=11.5, leading=15,
         alignment=TA_CENTER, textColor=colors.black
     )
     style_title = ParagraphStyle(
         'CoverTitle', parent=styles['Normal'],
-        fontName='Times-Bold', fontSize=18, leading=22,
+        fontName='Times-Bold', fontSize=20, leading=25,
         alignment=TA_CENTER, textColor=colors.black
     )
     style_h1 = ParagraphStyle(
         'Heading1', parent=styles['Normal'],
-        fontName='Times-Bold', fontSize=14, leading=17,
-        spaceBefore=14, spaceAfter=4, textColor=colors.black,
+        fontName='Times-Bold', fontSize=16, leading=19,
+        spaceBefore=8, spaceAfter=3, textColor=colors.black,
         keepWithNext=True
     )
     style_h2 = ParagraphStyle(
         'Heading2', parent=styles['Normal'],
-        fontName='Times-Bold', fontSize=11.5, leading=14,
-        spaceBefore=10, spaceAfter=3, textColor=colors.black,
+        fontName='Times-Bold', fontSize=13.5, leading=16,
+        spaceBefore=6, spaceAfter=2, textColor=colors.black,
         keepWithNext=True
     )
     style_body = ParagraphStyle(
         'Body', parent=styles['Normal'],
-        fontName='Times-Roman', fontSize=10, leading=13,
+        fontName='Times-Roman', fontSize=12, leading=14.5,
         alignment=TA_JUSTIFY, textColor=colors.black
     )
     style_cell = ParagraphStyle(
         'Cell', parent=styles['Normal'],
-        fontName='Times-Roman', fontSize=8, leading=10,
+        fontName='Times-Roman', fontSize=10, leading=12,
         textColor=colors.black
     )
     style_cell_bold = ParagraphStyle(
         'CellBold', parent=styles['Normal'],
-        fontName='Times-Bold', fontSize=8, leading=10,
+        fontName='Times-Bold', fontSize=10, leading=12,
         textColor=colors.black
     )
 
     story = []
 
-    # ---------------- COVER PAGE (PROPORTIONALLY BALANCED VERTICAL SPACING) ----------------
+    # ---------------- PAGE 1: COVER PAGE (PROPORTIONALLY BALANCED VERTICAL SPACING) ----------------
     story.append(Paragraph("<b>UNIVERSITY OF INFORMATION TECHNOLOGY AND SCIENCES (UITS)</b>", style_center_bold))
     story.append(Spacer(1, 4))
     story.append(Paragraph("<b>DEPARTMENT OF COMPUTER SCIENCE AND ENGINEERING</b>", style_center_bold))
     story.append(Spacer(1, 3))
     story.append(Paragraph("DHAKA, BANGLADESH", style_center))
-    story.append(Spacer(1, 36))
+    story.append(Spacer(1, 30))
 
-    # University Logo
     if os.path.exists(LOGO_PATH):
-        from reportlab.lib.units import inch
         img = RLImage(LOGO_PATH, width=1.8*inch, height=1.8*inch)
         img.hAlign = 'CENTER'
         story.append(img)
-        story.append(Spacer(1, 36))
+        story.append(Spacer(1, 30))
 
     story.append(Paragraph("<b>CSE 416: Software Project Design and Development (Lab)</b>", style_center_bold))
     story.append(Spacer(1, 8))
@@ -543,15 +471,15 @@ def generate_pdf_document():
     story.append(Spacer(1, 10))
 
     story.append(Paragraph("<b>The Round Table Exchange (RTE): A Multi-Party Skill Barter Network with Graph-Based Cycle Matching</b>", style_center_bold))
-    story.append(Spacer(1, 44))
+    story.append(Spacer(1, 38))
 
     story.append(Paragraph("<b>Submitted By:</b>", style_center_bold))
     story.append(Spacer(1, 4))
     story.append(Paragraph("Ahmmad Abdali Khan (ID: 0432320005101118)", style_center))
     story.append(Paragraph("Sumaia Bintey Ismail (ID: 0432320005101103)", style_center))
     story.append(Paragraph("Alin (ID: 0432320005101131)", style_center))
-    story.append(Paragraph("<i>Batch: CSE-54, Section: 7B</i>", style_center))
-    story.append(Spacer(1, 36))
+    story.append(Paragraph("<i>Batch: CSE-54, Section: 7B</i>", style_center_it))
+    story.append(Spacer(1, 30))
 
     story.append(Paragraph("<b>Submitted To:</b>", style_center_bold))
     story.append(Spacer(1, 4))
@@ -559,7 +487,7 @@ def generate_pdf_document():
     story.append(Paragraph("Assistant Professor", style_center))
     story.append(Paragraph("Department of Computer Science and Engineering", style_center))
     story.append(Paragraph("University of Information Technology and Sciences (UITS)", style_center))
-    story.append(Spacer(1, 60))
+    story.append(Spacer(1, 48))
 
     story.append(Paragraph("Date of Submission: 02 November 2026", style_center))
 
@@ -576,7 +504,7 @@ def generate_pdf_document():
             row_items = []
             for val in r:
                 txt = str(val)
-                bold = ("PASS" in txt or "Pass" in txt or "100%" in txt or "98%" in txt or "MET" in txt or "Closed" in txt)
+                bold = any(k in txt for k in ["PASS", "Pass", "100%", "98%", "MET", "Closed"])
                 row_items.append(Paragraph(f"<b>{txt}</b>" if bold else txt, style_cell))
             table_data.append(row_items)
 
@@ -587,88 +515,46 @@ def generate_pdf_document():
             ('LINEABOVE', (0,0), (-1,0), 1, colors.black),
             ('LINEBELOW', (0,-1), (-1,-1), 1, colors.black),
             ('INNERGRID', (0,0), (-1,-1), 0.5, colors.HexColor('#CCCCCC')),
-            ('TOPPADDING', (0,0), (-1,-1), 2),
-            ('BOTTOMPADDING', (0,0), (-1,-1), 2),
+            ('TOPPADDING', (0,0), (-1,-1), 1.5),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 1.5),
             ('LEFTPADDING', (0,0), (-1,-1), 4),
             ('RIGHTPADDING', (0,0), (-1,-1), 4),
             ('VALIGN', (0,0), (-1,-1), 'TOP'),
         ]))
         return t
 
-    # ---------------- DOCUMENT CONTROL ----------------
-    story.append(Paragraph("Document Control", style_h1))
-    story.append(make_pdf_table(
-        ["Parameter", "Configuration Reference"],
-        [
-            ["Repository", "https://github.com/Veil-Proxima/RTE"],
-            ["Version Tested", "v1.0.1-test (commit 141fe65)"],
-            ["Live Client Site", "https://veil-proxima.github.io/RTE (Local API: http://127.0.0.1:8000)"],
-            ["Report Version", "1.0 (Baseline quality tier)"],
-            ["Prepared By", "Ahammed Abdali Khan, Sumaia Bintey Ismail, Alin"],
-            ["Reviewed By", "Ahammed Abdali Khan"],
-            ["Target Quality Tier", "Baseline (ISO/IEC/IEEE 29119-3 & ISO/IEC 25010 compliant)"]
-        ],
-        [120, 360]
-    ))
-    story.append(Spacer(1, 6))
-
-    story.append(Paragraph("Document Revision History", style_h2))
-    story.append(make_pdf_table(
-        ["Version", "Date", "Summary of Verification Changes"],
-        [
-            ["1.0", "02 Nov 2026", "First comprehensive baseline report: 78 automated test cases, unit + integration suites, RTM traceability, 98% core backend coverage, NFR performance benchmarks, and defect log."],
-            ["1.1", "05 Nov 2026", "Planned for Exp 10: Extended OWASP ZAP automated scanner, SonarCloud static analysis gates, and multi-browser Playwright matrix."]
-        ],
-        [60, 90, 330]
-    ))
-    story.append(Spacer(1, 8))
-
-    # ---------------- INTRODUCTION ----------------
+    # ---------------- PAGE 2: INTRODUCTION, SCOPE & TEST ENVIRONMENT ----------------
     story.append(Paragraph("1. Introduction & Overview", style_h1))
-    story.append(Paragraph("<b>1.1 Purpose:</b> This report details the verification of RoundTable Exchange (RTE) v1.0.1-test: test scope, methodology, automated test results, code coverage telemetry, defect analysis, and release readiness based on ISO/IEC/IEEE 29119-3 and ISO/IEC 25010.", style_body))
-    story.append(Spacer(1, 4))
-    story.append(Paragraph("<b>1.2 Product Overview:</b> RTE is a circular multi-party skill barter engine that eliminates the classic 'Double Coincidence of Wants' barrier by discovering closed barter cycles of length k in {2, 3, 4} using a Bounded DFS multigraph engine. Discovered cycles are evaluated via a composite function balancing Haversine geographic proximity with weekly availability schedules: S(C) = alpha * S_geo(C) + (1 - alpha) * S_sched(C). An atomic state machine coordinates unanimous single-veto consensus.", style_body))
-    story.append(Spacer(1, 6))
+    story.append(Paragraph("<b>1.1 Purpose & Product Architecture:</b> This report details the formal verification of RoundTable Exchange (RTE) v1.0.1-test based on ISO/IEC/IEEE 29119-3 and ISO/IEC 25010. RTE is a circular skill barter platform eliminating the 'Double Coincidence of Wants' by discovering closed trade cycles of length k in {2, 3, 4} on a directed multigraph using Bounded DFS. Discovered cycles are evaluated via a composite scoring function: S(C) = alpha * S_geo(C) + (1 - alpha) * S_sched(C), balancing Haversine proximity with weekly schedules, with unanimous single-veto consensus.", style_body))
+    story.append(Spacer(1, 3))
 
-    story.append(Paragraph("1.3 Scope of Testing", style_h2))
+    story.append(Paragraph("1.2 Scope of Testing", style_h2))
     story.append(make_pdf_table(
         ["Subsystem / Functional Area", "SRS Requirements", "Testing Levels"],
         [
             ["User onboarding & Dhaka coordinate profiles", "FR-01 to FR-05, FR-24", "Unit, Integration"],
-            ["Skill taxonomy & multi-listing management", "FR-06 to FR-10", "Unit, Integration"],
-            ["Directed Multigraph construction & edges", "FR-11 to FR-14", "Unit, Integration"],
-            ["Bounded DFS cycle discovery (k in [2, 4])", "FR-15 to FR-18", "Unit, Integration, Algorithmic"],
-            ["Rotational cycle deduplication & DAG safety", "FR-19 to FR-21", "Unit, Algorithmic"],
-            ["Haversine geodesic distance ranking", "FR-22 to FR-23", "Unit, Integration"],
-            ["Weekly availability grid set intersection", "FR-24 to FR-26", "Unit, Integration"],
-            ["Dynamic composite scoring & real-time alpha", "FR-27 to FR-28", "Unit, Client Engine"],
+            ["Skill taxonomy & directed multigraph construction", "FR-06 to FR-14", "Unit, Integration"],
+            ["Bounded DFS cycle discovery (k in [2, 4])", "FR-15 to FR-21", "Unit, Algorithmic"],
+            ["Haversine proximity & schedule overlap scoring", "FR-22 to FR-28", "Unit, Integration"],
             ["Atomic 5-stage proposal state machine", "FR-29 to FR-33", "Unit, Integration"],
-            ["Synthetic population generator & scaling", "FR-34 to FR-36", "Performance, Load"],
-            ["REST API gateway contract validation", "FR-37 to FR-40", "Integration, Security"],
-            ["Client-side standalone JavaScript engine", "FR-41 to FR-43", "Client Unit, Parity"],
-            ["Responsive ForceAtlas2 physics canvas", "FR-44 to FR-46", "UI, Cross-Browser"],
-            ["Performance, Security, and Code Coverage", "NFR-01 to NFR-16", "Perf, Sec, Coverage"]
+            ["Synthetic scaling, REST API & client parity", "FR-34 to FR-46, NFR-01..16", "Perf, Parity, Security"]
         ],
-        [200, 140, 140]
+        [185, 135, 110]
     ))
+    story.append(Spacer(1, 4))
 
-    story.append(PageBreak())
-
-    # ---------------- TEST ENVIRONMENT & STRATEGY ----------------
     story.append(Paragraph("2. Test Environment & Strategy", style_h1))
     story.append(make_pdf_table(
         ["Component", "Specification & Tooling Configuration"],
         [
-            ["Host Operating System", "Windows 11 Enterprise (local test harness); Linux x86_64 (CI container)"],
-            ["Language Runtimes", "Python 3.15.0 (64-bit AMD64), Node.js v24.22.1"],
-            ["Backend Frameworks", "FastAPI 0.115, Starlette, Pydantic v2.10, Uvicorn 0.34, NetworkX 3.4"],
-            ["Test Runners & Libraries", "pytest 9.1.1, pytest-cov 6.0, coverage.py 7.6, anyio 4.15, Node test runner"],
-            ["Test Store", "In-memory Multigraph and clean dictionary store; fresh instances on every test run"],
-            ["Browsers Tested", "Google Chrome 131, Microsoft Edge 131 desktop, responsive mobile viewports"]
+            ["Host OS & CI Container", "Windows 11 Enterprise (local test harness); Linux x86_64 (CI container)"],
+            ["Language Runtimes & Core", "Python 3.15.0 (64-bit AMD64), Node.js v24.22.1, FastAPI 0.115, NetworkX 3.4"],
+            ["Test Harness & Telemetry", "pytest 9.1.1, pytest-cov 6.0, coverage.py 7.6, anyio 4.15, Node test runner"],
+            ["Browsers Verified", "Google Chrome 131, Microsoft Edge 131 desktop, responsive mobile viewports"]
         ],
-        [150, 330]
+        [150, 280]
     ))
-    story.append(Spacer(1, 6))
+    story.append(Spacer(1, 3))
 
     story.append(Paragraph("2.1 Exit Criteria Evaluation (Baseline Quality Tier)", style_h2))
     story.append(make_pdf_table(
@@ -678,72 +564,26 @@ def generate_pdf_document():
             ["P1 Critical Test Pass Rate", "100%", "100% (52 / 52 P1 cases passed)", "Pass"],
             ["Core Backend Code Coverage", ">= 85%", "98% (523 / 536 statements)", "Pass"],
             ["Open Severity 1 (S1) Defects", "0", "0 (DEF-01 resolved in 141fe65)", "Pass"],
-            ["Open Severity 2 (S2) Defects", "0", "0", "Pass"],
             ["Dual-Engine Mathematical Parity", "100%", "100% Identical Output (94.7%)", "Pass"]
         ],
-        [180, 80, 160, 60]
-    ))
-
-    story.append(Spacer(1, 8))
-
-    # ---------------- RTM ----------------
-    story.append(Paragraph("3. Requirements Traceability Matrix (RTM)", style_h1))
-    story.append(make_pdf_table(
-        ["Req ID", "Functional Requirement Description", "Test Case IDs", "Status"],
-        [
-            ["FR-01", "User registration with Dhaka coordinate profiles", "TC-01, TC-02, TC-03", "Pass"],
-            ["FR-02", "User listing query with metadata retrieval", "TC-04, TC-05", "Pass"],
-            ["FR-03", "User deletion with cascading store cleanup", "TC-06, TC-07", "Pass"],
-            ["FR-04", "Input validation on user profile coordinates", "TC-08, TC-09", "Pass"],
-            ["FR-05", "HTTP 404 response on non-existent entities", "TC-10", "Pass"],
-            ["FR-06", "Skill offer listing registration & category", "TC-11, TC-12", "Pass"],
-            ["FR-07", "Skill want request registration & validation", "TC-13, TC-14", "Pass"],
-            ["FR-08", "Prevention of identical offer/want on user", "TC-15", "Pass"],
-            ["FR-09", "Skill taxonomy & location metadata endpoint", "TC-16, TC-17", "Pass"],
-            ["FR-10", "Case-insensitive trimmed skill matching", "TC-18, TC-19", "Pass"],
-            ["FR-11", "MultiDiGraph node synthesis from users", "TC-20, TC-21", "Pass"],
-            ["FR-12", "Directed edge insertion matching offer->want", "TC-22, TC-23", "Pass"],
-            ["FR-13", "Edge attributes storing transferred skill", "TC-24", "Pass"],
-            ["FR-14", "Multi-edge support between users", "TC-25", "Pass"],
-            ["FR-15", "Bounded DFS 3-party loop detection (k=3)", "TC-26, TC-27", "Pass"],
-            ["FR-16", "Bounded DFS 4-party loop detection (k=4)", "TC-28, TC-29", "Pass"],
-            ["FR-17", "Strict cycle length bounding (min_k, max_k)", "TC-30, TC-31", "Pass"],
-            ["FR-18", "Rotational canonical cycle deduplication", "TC-32, TC-33", "Pass"],
-            ["FR-19", "Zero false-positive cycles on DAG topologies", "TC-34, TC-35", "Pass"],
-            ["FR-20", "Early DFS recursion pruning (> max_k)", "TC-36", "Pass"],
-            ["FR-21", "Cycle discovery limit safety cap (100 max)", "TC-37", "Pass"],
-            ["FR-22", "Haversine geodesic distance calculation", "TC-38, TC-39", "Pass"],
-            ["FR-23", "Proximity score exponential decay modeling", "TC-40, TC-41", "Pass"],
-            ["FR-24", "Weekly availability grid modeling (7x24)", "TC-42", "Pass"],
-            ["FR-25", "Mutual schedule overlap set intersection", "TC-43, TC-44", "Pass"],
-            ["FR-26", "Normalized schedule overlap scoring (hrs/6)", "TC-45", "Pass"],
-            ["FR-27", "Parametric composite scoring with alpha", "TC-46, TC-47", "Pass"],
-            ["FR-28", "Descending composite score sorting", "TC-48", "Pass"],
-            ["FR-29", "Trade proposal initialization & UUID", "TC-49, TC-50", "Pass"],
-            ["FR-30", "Multi-party consensus tracking (Pending/Accepted)", "TC-51, TC-52", "Pass"],
-            ["FR-31", "Unanimous acceptance transition to Locked", "TC-53, TC-54", "Pass"],
-            ["FR-32", "Single-veto immediate transition to Rejected", "TC-55, TC-56", "Pass"],
-            ["FR-33", "Response rejection on invalid proposal ID", "TC-57, TC-58", "Pass"],
-            ["FR-34", "Synthetic Dhaka population generator", "TC-59, TC-60", "Pass"],
-            ["FR-35", "Empirical scalability benchmark runner", "TC-61, TC-62", "Pass"],
-            ["FR-36", "Graph build vs DFS cycle search telemetry", "TC-63", "Pass"],
-            ["FR-37", "REST API /api/meta endpoint", "TC-64", "Pass"],
-            ["FR-38", "REST API /api/match/run endpoint", "TC-65, TC-66", "Pass"],
-            ["FR-39", "REST API /api/match/cycles cached query", "TC-67", "Pass"],
-            ["FR-40", "REST API /api/reset state restore endpoint", "TC-68", "Pass"],
-            ["FR-41", "Standalone client JavaScript DFS engine", "TC-69, TC-70", "Pass"],
-            ["FR-42", "JavaScript Haversine & schedule score parity", "TC-71, TC-72", "Pass"],
-            ["FR-43", "Real-time client alpha slider re-scoring", "TC-73", "Pass"],
-            ["NFR-01", "Algorithmic matching < 50ms for N <= 100", "PT-01", "Pass"],
-            ["NFR-02", "REST API response time < 100ms under load", "PT-02, PT-03", "Pass"],
-            ["NFR-04", "Dual-engine mathematical score parity (94.7%)", "TC-74", "Pass"]
-        ],
-        [55, 255, 120, 50]
+        [170, 70, 140, 50]
     ))
 
     story.append(PageBreak())
 
-    # ---------------- EXECUTION & COVERAGE ----------------
+    # ---------------- PAGE 3: REQUIREMENTS TRACEABILITY MATRIX (RTM) ----------------
+    story.append(Paragraph("3. Requirements Traceability Matrix (RTM)", style_h1))
+    story.append(Paragraph("The Requirements Traceability Matrix maps core functional requirements to test cases and empirical execution outcomes.", style_body))
+    story.append(Spacer(1, 4))
+    story.append(make_pdf_table(
+        ["Req ID", "Functional Requirement Description", "Test Case IDs", "Status"],
+        RTM_ROWS,
+        [55, 220, 110, 45]
+    ))
+
+    story.append(PageBreak())
+
+    # ---------------- PAGE 4: EXECUTION & COVERAGE ----------------
     story.append(Paragraph("4. Execution Results & Code Coverage Telemetry", style_h1))
     story.append(Paragraph("4.1 Automated Test Execution Summary", style_h2))
     story.append(make_pdf_table(
@@ -754,7 +594,7 @@ def generate_pdf_document():
             ["Client-Side Standalone Engine Tests", "14", "14", "0", "100.0%"],
             ["Total Automated Test Suite", "78", "78", "0", "100.0%"]
         ],
-        [180, 70, 70, 70, 90]
+        [170, 65, 65, 65, 65]
     ))
     story.append(Spacer(1, 6))
 
@@ -762,16 +602,16 @@ def generate_pdf_document():
     story.append(make_pdf_table(
         ["Module File", "Statements", "Missing", "Coverage (%)", "Verified Functional Scope"],
         [
-            ["backend/app.py", "140", "0", "100%", "FastAPI REST routes, schema validation & static mounts"],
-            ["backend/models.py", "52", "0", "100%", "Pydantic domain entities (User, SkillListing, TradeCycle)"],
-            ["backend/synthetic_data.py", "54", "0", "100%", "Dhaka demographic generator & scaling benchmarks"],
-            ["backend/test_api.py", "74", "0", "100%", "Full integration suite for HTTP GET/POST/DELETE paths"],
-            ["backend/test_engine.py", "70", "0", "100%", "Algorithmic DFS bounds, DAG acyclic checks, consensus"],
-            ["backend/graph_engine.py", "109", "7", "94%", "MultiDiGraph, bounded DFS cycle discovery & scoring"],
-            ["backend/workflow.py", "37", "6", "84%", "Atomic multi-party proposal state transitions & voting"],
-            ["TOTAL SYSTEM CORE", "536", "13", "98%", "Full System Automated Verification (Target >= 85%)"]
+            ["backend/app.py", "140", "0", "100%", "FastAPI REST routes & static mounts"],
+            ["backend/models.py", "52", "0", "100%", "Pydantic domain entities (User, SkillListing)"],
+            ["backend/synthetic_data.py", "54", "0", "100%", "Dhaka demographic generator & scaling"],
+            ["backend/test_api.py", "74", "0", "100%", "Full integration suite for REST routes"],
+            ["backend/test_engine.py", "70", "0", "100%", "Algorithmic DFS bounds & consensus"],
+            ["backend/graph_engine.py", "109", "7", "94%", "MultiDiGraph, DFS cycle discovery & scoring"],
+            ["backend/workflow.py", "37", "6", "84%", "Atomic proposal state transitions & voting"],
+            ["TOTAL SYSTEM CORE", "536", "13", "98%", "Full System Verification (Target >= 85%)"]
         ],
-        [120, 60, 50, 80, 170]
+        [130, 55, 45, 65, 135]
     ))
     story.append(Spacer(1, 6))
 
@@ -786,12 +626,12 @@ def generate_pdf_document():
             ["200 users", "1,420 edges", "9.10 ms", "287.30 ms", "296.40 ms", "162 cycles"],
             ["247 users", "1,840 edges", "12.40 ms", "538.60 ms", "551.00 ms", "241 cycles (capped at 100)"]
         ],
-        [75, 75, 80, 80, 85, 85]
+        [70, 70, 70, 70, 75, 75]
     ))
 
     story.append(PageBreak())
 
-    # ---------------- DEFECT REPORT & ANALYSIS ----------------
+    # ---------------- PAGE 5: DEFECT REPORT & ANALYSIS ----------------
     story.append(Paragraph("5. Defect Log & Main Bug Fixes", style_h1))
     story.append(make_pdf_table(
         ["ID", "Req Ref", "Problem Description", "Sev", "Status", "Resolution Reference"],
@@ -805,13 +645,13 @@ def generate_pdf_document():
             ["DEF-07", "FR-10", "Skill matching failed on mixed case (e.g. python vs Python).", "S3", "Closed", "Lowercase string normalization"],
             ["DEF-08", "FR-44", "Vis.js network nodes collapsed on small viewports.", "S4", "Closed", "ForceAtlas2 springLength tuning"]
         ],
-        [50, 50, 175, 30, 45, 130]
+        [50, 50, 160, 30, 40, 100]
     ))
     story.append(Spacer(1, 6))
 
     story.append(Paragraph("5.1 Root Cause Analysis of Primary Bug (DEF-01)", style_h2))
     story.append(Paragraph("In frontend/js/app.js, findClientCycles() contained static placeholder constants (proxScore = 0.85, overlapScore = 0.75). With alpha = 0.5, (0.5 * 0.85) + (0.5 * 0.75) = 0.80 (80.0%) across every cycle. We resolved this by implementing haversineDistanceKm and calculateScheduleOverlapHours in JavaScript, matching the Python backend exactly (Cycle 1: 94.7%, Cycle 2: 69.8%).", style_body))
-    story.append(Spacer(1, 8))
+    story.append(Spacer(1, 6))
 
     story.append(Paragraph("6. Individual Contributions & Sign-off", style_h1))
     story.append(make_pdf_table(
@@ -821,7 +661,7 @@ def generate_pdf_document():
             ["Sumaia Bintey Ismail", "0432320005101103", "Consensus testing, schedule overlap grid, integration test harness, documentation", "3", "3"],
             ["Alin", "0432320005101131", "Synthetic benchmarks, REST API contracts, negative security tests, QA review", "1", "1"]
         ],
-        [110, 85, 205, 40, 40]
+        [105, 80, 185, 30, 30]
     ))
     story.append(Spacer(1, 6))
 
@@ -831,8 +671,7 @@ def generate_pdf_document():
 
     doc.build(story)
     
-    # Also copy to root for immediate access
-    import shutil
+    # Also copy to docs root for immediate access
     shutil.copy2(OUT_PDF, ROOT_PDF)
     print(f"Generated PDF submission: {OUT_PDF}")
 
