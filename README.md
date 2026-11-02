@@ -67,9 +67,9 @@ All 13 unit and integration tests pass with comprehensive coverage across the en
 | **TOTAL (Backend Core)** | **536** | **13** | **98%** | **Full System Coverage (13/13 Tests Passing in 0.63s)** |
 
 📋 **Official Academic Test Documentation:**
-- 📄 **ISO/IEC/IEEE 29119-3 Test Report (Markdown):** [`SOFTWARE_TEST_REPORT.md`](SOFTWARE_TEST_REPORT.md)
-- 📑 **Formal Printable PDF:** [`docs/reports/SOFTWARE_TEST_REPORT.pdf`](docs/reports/SOFTWARE_TEST_REPORT.pdf)
-- 📝 **Formal Editable DOCX:** [`docs/reports/SOFTWARE_TEST_REPORT.docx`](docs/reports/SOFTWARE_TEST_REPORT.docx)
+- 📄 **ISO/IEC/IEEE 29119-3 Test Report (Markdown):** [`md/SOFTWARE_TEST_REPORT.md`](md/SOFTWARE_TEST_REPORT.md)
+- 📑 **Formal Printable PDF:** [`docs/reports/SOFTWARE_TEST_REPORT_SUBMISSION.pdf`](docs/reports/SOFTWARE_TEST_REPORT_SUBMISSION.pdf)
+- 📝 **Formal Editable DOCX:** [`docs/reports/SOFTWARE_TEST_REPORT_SUBMISSION.docx`](docs/reports/SOFTWARE_TEST_REPORT_SUBMISSION.docx)
 - 📊 **1-Page System Brief PDF:** [`docs/reports/SYSTEM_OVERVIEW_AND_COVERAGE.pdf`](docs/reports/SYSTEM_OVERVIEW_AND_COVERAGE.pdf)
 
 ---
@@ -100,17 +100,22 @@ RTE/
 │   └── js/
 │       ├── app.js                 # Dual-mode REST client + in-browser fallback engine
 │       └── graph_viz.js           # Vis.js ForceAtlas2 network visualizer
-├── docs/                          # Academic documentation & reports
-│   ├── reports/                   # Compiled PDF & Word reports (Test Report, Briefs)
-│   ├── frontend_doc_images/       # Architecture & UI wireframe diagrams
+├── docs/                          # Academic documentation, Word & PDF reports
+│   ├── reports/                   # Compiled PDF & Word submissions (Test Reports, Briefs)
+│   ├── test_report_latex/         # Academic LaTeX project source (titlepage.tex, main.tex)
 │   └── proposal/                  # LaTeX project proposal source files
+├── md/                            # Markdown specifications & documentation
+│   ├── SOFTWARE_TEST_REPORT.md    # Complete ISO/IEC/IEEE 29119-3 Software Test Report
+│   ├── PROJECT.md                 # System architecture manual
+│   ├── AGENT.md                   # AI migration & architecture guidelines
+│   ├── DIAGRAMS.md                # System diagrams & workflows
+│   ├── FRONTEND_SCAFFOLDING.md    # UI/UX layout scaffolding specification
+│   ├── FRONTEND_UI_DIAGRAMS.md    # Wireframe diagrams for Draw.io
+│   └── SYSTEM_DETAILS_AND_COVERAGE.md
 ├── scripts/                       # Report generation & build utilities
-│   ├── generate_test_report_pdf.py # Generates SOFTWARE_TEST_REPORT.pdf
-│   ├── generate_test_report_doc.py # Generates SOFTWARE_TEST_REPORT.docx
-│   └── generate_one_page_pdf.py   # Generates SYSTEM_OVERVIEW_AND_COVERAGE.pdf
-├── SOFTWARE_TEST_REPORT.md        # Comprehensive ISO/IEC/IEEE 29119-3 Test Report
-├── PROJECT.md                     # System architecture manual
-├── AGENT.md                       # AI migration & architecture guidelines
+│   ├── build_submitable_documents.py # Generates Times New Roman Word & PDF submissions
+│   ├── generate_test_report_pdf.py   # Generates test report PDF
+│   └── generate_one_page_pdf.py      # Generates 1-page system summary
 └── .github/workflows/
     └── deploy-pages.yml           # Automated GitHub Pages CI/CD workflow
 ```
@@ -122,4 +127,3 @@ RTE/
 - **Sumaia Bintey Ismail** — Application & Systems Engineer (*UITS CSE, Dhaka, Bangladesh*)
 - **Alin** — Software Engineer (*UITS CSE, Dhaka, Bangladesh*)
 - **Supervised By:** Dr. Mahfida Amjad Dipa (Dept. of CSE, UITS)
-- **Course Instructor:** Al Imtiaz, Associate Professor (Dept. of CSE, UITS)

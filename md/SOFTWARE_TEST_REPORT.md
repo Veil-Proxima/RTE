@@ -1,6 +1,5 @@
-# CSE0613316 Software Project Design and Development (Lab)
+# CSE 416: Software Project Design and Development (Lab)
 # Software Test Report
-### Test plan, test cases, and results (based on ISO/IEC/IEEE 29119-3)
 
 ---
 
@@ -12,8 +11,7 @@
 | **Member 2** | `0432320005101103` — **Sumaia Bintey Ismail** — Developer & Test Lead |
 | **Member 3** | `0432320005101131` — **Alin** — Developer & Quality Analyst |
 | **Experiment** | **Exp 9 (v1.0)** / **Exp 10 (v1.1)** |
-| **Instructor** | **Al Imtiaz**, Associate Professor, Dept. of CSE, UITS |
-| **Project Supervisor** | **Dr. Mahfida Amjad Dipa**, Dept. of CSE, UITS |
+| **Submitted To** | **Dr. Mahfida Amjad Dipa**, Assistant Professor, Dept. of CSE, UITS |
 | **Submission Date** | **02 November 2026** |
 
 ---
@@ -77,7 +75,7 @@ where geographic proximity ($S_{\text{geo}}$) is modeled via exponential decay o
 | Production PostgreSQL / Distributed Redis Clustering | Current operational envelope specifies self-contained single-node deployment (FastAPI in-memory engine + static client). |
 
 ### 1.4 References
-1. **SRS (Software Requirements Specification)**: *RoundTable Exchange v1.0*, CSE0613316 Lab, UITS (2026).
+1. **SRS (Software Requirements Specification)**: *RoundTable Exchange v1.0*, CSE 416 Lab, UITS (2026).
 2. **Architecture & Scaffolding Document**: *Frontend UI/UX Architecture & Layout Scaffolding (IEEE Std 1016-2009)*, RTE Project.
 3. **ISO/IEC/IEEE 29119-3:2021**: *Software and systems engineering — Software testing — Part 3: Test documentation*.
 4. **ISO/IEC 25010:2023**: *Systems and software Quality Requirements and Evaluation (SQuaRE) — System and software quality models*.

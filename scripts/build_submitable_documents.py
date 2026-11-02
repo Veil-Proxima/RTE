@@ -172,9 +172,8 @@ def generate_word_document():
         p_logo.paragraph_format.space_after = Pt(14)
         p_logo.add_run().add_picture(LOGO_PATH, width=Inches(1.8))
 
-    add_para("CSE0613316 Software Project Design and Development (Lab)", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=4, space_after=4, size=11, bold=True)
-    add_para("SOFTWARE TEST REPORT", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=4, space_after=4, size=18, bold=True)
-    add_para("Test Plan, Test Cases, and Results (based on ISO/IEC/IEEE 29119-3 & ISO/IEC 25010)", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=2, space_after=12, size=10, italic=True)
+    add_para("CSE 416: Software Project Design and Development (Lab)", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=4, space_after=4, size=11, bold=True)
+    add_para("SOFTWARE TEST REPORT", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=4, space_after=8, size=18, bold=True)
     
     add_para("The Round Table Exchange (RTE): A Multi-Party Skill Barter Network with Graph-Based Cycle Matching", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=4, space_after=24, size=12, bold=True)
 
@@ -182,19 +181,13 @@ def generate_word_document():
     add_para("Ahmmad Abdali Khan (ID: 0432320005101118)", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=1, space_after=1, size=10.5)
     add_para("Sumaia Bintey Ismail (ID: 0432320005101103)", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=1, space_after=1, size=10.5)
     add_para("Alin (ID: 0432320005101131)", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=1, space_after=2, size=10.5)
-    add_para("Batch: CSE-54, Section: 7A", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=1, space_after=14, size=9.5, italic=True)
+    add_para("Batch: CSE-54, Section: 7A", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=1, space_after=16, size=9.5, italic=True)
 
     add_para("Submitted To:", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=4, space_after=2, size=11, bold=True)
-    add_para("Al Imtiaz", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=1, space_after=1, size=10.5, bold=True)
-    add_para("Associate Professor", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=1, space_after=1, size=10)
-    add_para("Department of Computer Science and Engineering", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=1, space_after=1, size=10)
-    add_para("University of Information Technology and Sciences (UITS)", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=1, space_after=10, size=10)
-
-    add_para("Project Supervisor:", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=4, space_after=2, size=11, bold=True)
     add_para("Dr. Mahfida Amjad Dipa", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=1, space_after=1, size=10.5, bold=True)
     add_para("Assistant Professor", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=1, space_after=1, size=10)
     add_para("Department of Computer Science and Engineering", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=1, space_after=1, size=10)
-    add_para("University of Information Technology and Sciences (UITS)", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=1, space_after=20, size=10)
+    add_para("University of Information Technology and Sciences (UITS)", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=1, space_after=22, size=10)
 
     add_para("Date of Submission: 02 November 2026", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=6, space_after=0, size=10)
 
@@ -515,36 +508,27 @@ def generate_pdf_document():
         story.append(img)
         story.append(Spacer(1, 14))
 
-    story.append(Paragraph("<b>CSE0613316 Software Project Design and Development (Lab)</b>", style_center_bold))
-    story.append(Spacer(1, 4))
+    story.append(Paragraph("<b>CSE 416: Software Project Design and Development (Lab)</b>", style_center_bold))
+    story.append(Spacer(1, 6))
     story.append(Paragraph("<b>SOFTWARE TEST REPORT</b>", style_title))
-    story.append(Spacer(1, 3))
-    story.append(Paragraph("<i>Test Plan, Test Cases, and Results (based on ISO/IEC/IEEE 29119-3 & ISO/IEC 25010)</i>", style_center))
     story.append(Spacer(1, 10))
 
     story.append(Paragraph("<b>The Round Table Exchange (RTE): A Multi-Party Skill Barter Network with Graph-Based Cycle Matching</b>", style_center_bold))
-    story.append(Spacer(1, 18))
+    story.append(Spacer(1, 20))
 
     story.append(Paragraph("<b>Submitted By:</b>", style_center_bold))
     story.append(Paragraph("Ahmmad Abdali Khan (ID: 0432320005101118)", style_center))
     story.append(Paragraph("Sumaia Bintey Ismail (ID: 0432320005101103)", style_center))
     story.append(Paragraph("Alin (ID: 0432320005101131)", style_center))
     story.append(Paragraph("<i>Batch: CSE-54, Section: 7A</i>", style_center))
-    story.append(Spacer(1, 14))
+    story.append(Spacer(1, 16))
 
     story.append(Paragraph("<b>Submitted To:</b>", style_center_bold))
-    story.append(Paragraph("<b>Al Imtiaz</b>", style_center_bold))
-    story.append(Paragraph("Associate Professor", style_center))
-    story.append(Paragraph("Department of Computer Science and Engineering", style_center))
-    story.append(Paragraph("University of Information Technology and Sciences (UITS)", style_center))
-    story.append(Spacer(1, 10))
-
-    story.append(Paragraph("<b>Project Supervisor:</b>", style_center_bold))
     story.append(Paragraph("<b>Dr. Mahfida Amjad Dipa</b>", style_center_bold))
     story.append(Paragraph("Assistant Professor", style_center))
     story.append(Paragraph("Department of Computer Science and Engineering", style_center))
     story.append(Paragraph("University of Information Technology and Sciences (UITS)", style_center))
-    story.append(Spacer(1, 18))
+    story.append(Spacer(1, 22))
 
     story.append(Paragraph("Date of Submission: 02 November 2026", style_center))
 
