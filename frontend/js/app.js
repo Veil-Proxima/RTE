@@ -71,6 +71,13 @@ function setupEventListeners() {
   alphaSlider.addEventListener('input', (e) => {
     appState.alpha = parseFloat(e.target.value);
     alphaVal.textContent = appState.alpha.toFixed(2);
+    if (appState.discoveredCycles && appState.discoveredCycles.length > 0) {
+      appState.discoveredCycles.forEach(c => {
+        c.composite_score = Math.round((appState.alpha * c.proximity_score + (1.0 - appState.alpha) * c.overlap_score) * 1000) / 1000;
+      });
+      appState.discoveredCycles.sort((a, b) => b.composite_score - a.composite_score);
+      renderCyclesList();
+    }
   });
 
   // Cycle Length Min/Max
@@ -494,6 +501,57 @@ function buildClientGraph(users) {
   return { G: { adj, edges, nodes: users.map(u => ({ id: u.id, label: u.name, city: u.location.city, offers: u.offers.map(o => o.skill_name), wants: u.wants.map(w => w.skill_name), color: u.avatar_color })) }, userMap };
 }
 
+function haversineDistanceKm(loc1, loc2) {
+  if (!loc1 || !loc2) return 0.0;
+  const lat1 = (loc1.latitude !== undefined ? loc1.latitude : loc1.lat || 0) * (Math.PI / 180);
+  const lon1 = (loc1.longitude !== undefined ? loc1.longitude : loc1.lon || 0) * (Math.PI / 180);
+  const lat2 = (loc2.latitude !== undefined ? loc2.latitude : loc2.lat || 0) * (Math.PI / 180);
+  const lon2 = (loc2.longitude !== undefined ? loc2.longitude : loc2.lon || 0) * (Math.PI / 180);
+
+  const R = 6371.0; // Earth's radius in km
+  const dlat = lat2 - lat1;
+  const dlon = lon2 - lon1;
+
+  const a = Math.sin(dlat / 2.0) ** 2 + Math.cos(lat1) * Math.cos(lat2) * (Math.sin(dlon / 2.0) ** 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(Math.max(0, 1.0 - a)));
+  return R * c;
+}
+
+function calculateScheduleOverlapHours(users) {
+  if (!users || users.length === 0) return 0.0;
+
+  const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const userSlotSets = users.map(user => {
+    const slots = new Set();
+    const avail = user.availability || [];
+    avail.forEach(win => {
+      const winDays = win.days || [];
+      const startH = Math.max(0, win.start_hour !== undefined ? win.start_hour : 0);
+      const endH = Math.min(24, win.end_hour !== undefined ? win.end_hour : 24);
+      winDays.forEach(day => {
+        const dayIdx = days.indexOf(day);
+        if (dayIdx !== -1) {
+          for (let h = startH; h < endH; h++) {
+            slots.add(`${dayIdx}_${h}`);
+          }
+        }
+      });
+    });
+    return slots;
+  });
+
+  if (userSlotSets.length === 0) return 0.0;
+
+  let commonSlots = [...userSlotSets[0]];
+  for (let i = 1; i < userSlotSets.length; i++) {
+    const currentSet = userSlotSets[i];
+    commonSlots = commonSlots.filter(slot => currentSet.has(slot));
+    if (commonSlots.length === 0) break;
+  }
+
+  return commonSlots.length;
+}
+
 function findClientCycles(G, userMap, minK, maxK, alpha) {
   const rawCycles = new Set();
   const nodes = Object.keys(G.adj);
@@ -525,7 +583,7 @@ function findClientCycles(G, userMap, minK, maxK, alpha) {
   rawCycles.forEach(strCycle => {
     const cycleNodes = strCycle.split(',');
     const k = cycleNodes.length;
-    const cycleUsers = cycleNodes.map(uid => userMap[uid]);
+    const cycleUsers = cycleNodes.map(uid => userMap[uid]).filter(Boolean);
     const edges = [];
 
     for (let i = 0; i < k; i++) {
@@ -534,16 +592,34 @@ function findClientCycles(G, userMap, minK, maxK, alpha) {
       const foundEdge = G.edges.find(e => e.from === uFrom && e.to === uTo);
       edges.push({
         from_user_id: uFrom,
-        from_user_name: userMap[uFrom].name,
+        from_user_name: userMap[uFrom] ? userMap[uFrom].name : uFrom,
         to_user_id: uTo,
-        to_user_name: userMap[uTo].name,
+        to_user_name: userMap[uTo] ? userMap[uTo].name : uTo,
         skill_name: foundEdge ? foundEdge.label : 'Skill'
       });
     }
 
-    const proxScore = 0.85;
-    const overlapScore = 0.75;
-    const composite = (alpha * proxScore + (1 - alpha) * overlapScore);
+    // Compute Geographic Proximity Score
+    const distances = [];
+    for (let i = 0; i < k; i++) {
+      const u1 = cycleUsers[i];
+      const u2 = cycleUsers[(i + 1) % k];
+      if (u1 && u2 && u1.location && u2.location) {
+        distances.push(haversineDistanceKm(u1.location, u2.location));
+      }
+    }
+
+    const meanDist = distances.length > 0 ? (distances.reduce((a, b) => a + b, 0) / distances.length) : 0.0;
+    // Proximity score decay: 1.0 at 0km, ~0.5 at 15km, decays exponentially
+    const proxScore = Math.exp(-meanDist / 15.0);
+
+    // Compute Schedule Overlap Score
+    const sharedHours = calculateScheduleOverlapHours(cycleUsers);
+    // Overlap score: 1.0 at 6+ shared hours/week
+    const overlapScore = Math.min(1.0, sharedHours / 6.0);
+
+    // Composite Score: alpha * prox + (1 - alpha) * overlap
+    const composite = (alpha * proxScore + (1.0 - alpha) * overlapScore);
 
     results.push({
       id: Math.random().toString(36).substring(2, 8),
@@ -551,11 +627,11 @@ function findClientCycles(G, userMap, minK, maxK, alpha) {
       user_ids: cycleNodes,
       user_names: cycleUsers.map(u => u.name),
       edges,
-      proximity_score: proxScore,
-      overlap_score: overlapScore,
-      composite_score: composite,
-      mean_distance_km: 3.4,
-      shared_hours_per_week: 4.5
+      proximity_score: Math.round(proxScore * 1000) / 1000,
+      overlap_score: Math.round(overlapScore * 1000) / 1000,
+      composite_score: Math.round(composite * 1000) / 1000,
+      mean_distance_km: Math.round(meanDist * 100) / 100,
+      shared_hours_per_week: sharedHours
     });
   });
 
@@ -804,11 +880,12 @@ async function handleCreateUser(e) {
     return;
   }
 
+  const locObj = DHAKA_LOCATIONS.find(l => l.city === city) || { city, lat: 23.8103, lon: 90.4125 };
   const newUser = {
     id: `user-${Date.now()}`,
     name,
     avatar_color: '#06B6D4',
-    location: { city, latitude: 23.8103, longitude: 90.4125 },
+    location: { city, latitude: locObj.lat, longitude: locObj.lon },
     availability: [{ days: ["Mon", "Wed", "Fri"], start_hour: 18, end_hour: 21 }],
     offers: [{ skill_name: offerSkill, category: SKILL_TAXONOMY[offerSkill] || "General" }],
     wants: [{ skill_name: wantSkill, category: SKILL_TAXONOMY[wantSkill] || "General" }]
