@@ -50,15 +50,12 @@
 
 \chapter{Introduction \& Scope}
 
-\section{Purpose}
-This document provides formal, verifiable test documentation for \textbf{RoundTable Exchange (RTE)} at release version \texttt{v1.0.1-test}. It specifies the verification plan, test environment, test design specifications, requirement traceability, empirical execution results, code coverage telemetry, defect logs, and release readiness in strict compliance with \textbf{ISO/IEC/IEEE 29119-3} and \textbf{ISO/IEC 25010}.
-
-\section{Product Overview}
-The Round Table Exchange (RTE) is a multi-party algorithmic bartering system designed to eliminate the classic economic hurdle known as the \textit{``Double Coincidence of Wants''}. Traditional exchange systems require direct 1-to-1 matching or rely on inflationary fiat or time tokens. In contrast, RTE models participant competencies as a directed multigraph and executes a Bounded-Depth Depth-First Search (Bounded DFS) algorithm to uncover closed barter cycles of length $k \in \{2, 3, 4\}$. Discovered trade cycles are scored using a composite multi-signal ranking function:
+\section{Purpose \& Product Architecture}
+This report describes the formal verification of \textbf{RoundTable Exchange (RTE)} \texttt{v1.0.1-test} according to \textbf{ISO/IEC/IEEE 29119-3} and \textbf{ISO/IEC 25010}. RTE is a circular skill barter platform that eliminates the \textit{'Double Coincidence of Wants'} by finding closed trade cycles of length $k \in \{2, 3, 4\}$ on a directed multigraph using Bounded DFS. Discovered cycles are scored by a composite scoring function:
 \begin{equation}
-S(C) = \alpha \cdot S_{\text{geo}}(C) + (1 - \alpha) \cdot S_{\text{sched}}(C)
+S(C) = \alpha S_{\text{geo}}(C) + (1 - \alpha) S_{\text{sched}}(C)
 \end{equation}
-where geographic proximity ($S_{\text{geo}}$) is modeled through exponential decay over Haversine distances between Dhaka metropolitan regions, and schedule overlap ($S_{\text{sched}}$) is computed through set intersection over a weekly $7 \times 24$ availability grid. Multi-party agreements are coordinated by an atomic state machine enforcing unanimous single-veto consensus.
+combining Haversine proximity and weekly schedules. Unanimous single-veto consensus.
 
 \section{Scope of Testing}
 

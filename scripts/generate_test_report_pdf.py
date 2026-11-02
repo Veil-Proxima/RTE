@@ -105,12 +105,8 @@ def generate_pdf():
     # Section 1: Introduction
     story.append(Paragraph("1. Introduction & Overview", style_h1))
     story.append(Paragraph(
-        "<b>1.1 Purpose:</b> This report details the verification of RoundTable Exchange (RTE) v1.0.1-test: "
-        "test scope, methodology, automated test results, code coverage telemetry, defect analysis, and release readiness based on ISO/IEC/IEEE 29119-3 and ISO/IEC 25010.<br/>"
-        "<b>1.2 Product Overview:</b> RTE is a circular multi-party skill barter engine that eliminates the classic 'Double Coincidence of Wants' "
-        "barrier by discovering closed barter cycles of length k in {2, 3, 4} using a Bounded DFS multigraph engine. Discovered cycles are evaluated "
-        "via a composite function balancing Haversine geographic proximity with weekly availability schedules: "
-        "S(C) = alpha * S_geo(C) + (1 - alpha) * S_sched(C). An atomic state machine coordinates unanimous single-veto consensus.",
+        "<b>1.1 Purpose & Product Architecture:</b> This report describes the formal verification of RoundTable Exchange (RTE) v1.0.1-test according to ISO/IEC/IEEE 29119-3 and ISO/IEC 25010. RTE is a circular skill barter platform that eliminates the 'Double Coincidence of Wants' by finding closed trade cycles of length k in {2, 3, 4} on a directed multigraph using Bounded DFS. Discovered cycles are scored by a composite scoring function:<br/>"
+        "S(C) = α S_geo(C) + (1 - α) S_sched(C) combining Haversine proximity and weekly schedules. Unanimous single-veto consensus.",
         style_body
     ))
     story.append(Spacer(1, 6))

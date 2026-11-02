@@ -155,11 +155,8 @@ def create_report_docx():
     create_table(meta_headers, meta_rows, [1.8, 5.2])
 
     add_h1("1. Introduction")
-    add_h2("1.1 Purpose")
-    add_p("This report covers how we tested RoundTable Exchange (RTE) at release version v1.0.1-test: what we tested, the applied verification methodologies, empirical execution results, code coverage telemetry, defect logs, and whether the system is qualified for laboratory release.")
-
-    add_h2("1.2 Product Overview")
-    add_p("RoundTable Exchange (RTE) is a multi-party algorithmic bartering system designed to eliminate the 'Double Coincidence of Wants' problem in peer-to-peer knowledge and skill exchange. Instead of forcing rigid 1-to-1 reciprocity or introducing synthetic fiat currencies, RTE constructs a directed multigraph from user competency profiles and traverses it via a Bounded-Depth Depth-First Search (DFS) algorithm to discover closed circular barter loops of length k in {2, 3, 4}. Discovered cycles are ranked using an empirical multi-signal balancing equation: S(C) = alpha * S_geo(C) + (1 - alpha) * S_sched(C), balancing Haversine geographic proximity against weekly schedule overlap. Multi-party agreements are coordinated by an atomic state machine enforcing unanimous single-veto consensus.")
+    add_h2("1.1 Purpose & Product Architecture")
+    add_p("This report describes the formal verification of RoundTable Exchange (RTE) v1.0.1-test according to ISO/IEC/IEEE 29119-3 and ISO/IEC 25010. RTE is a circular skill barter platform that eliminates the 'Double Coincidence of Wants' by finding closed trade cycles of length k in {2, 3, 4} on a directed multigraph using Bounded DFS. Discovered cycles are scored by a composite scoring function:\nS(C) = α S_geo(C) + (1 - α) S_sched(C) combining Haversine proximity and weekly schedules. Unanimous single-veto consensus.")
 
     add_h2("1.3 Scope")
     scope_headers = ["In Scope Subsystems", "SRS Requirements", "Testing Levels"]

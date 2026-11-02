@@ -224,7 +224,7 @@ def generate_word_document():
 
     # ---------------- PAGE 2: INTRODUCTION, SCOPE, ENVIRONMENT & EXIT CRITERIA ----------------
     add_heading_1("1. Introduction & Overview")
-    add_para("1.1 Purpose & Product Architecture: This report details the formal verification of RoundTable Exchange (RTE) v1.0.1-test based on ISO/IEC/IEEE 29119-3 and ISO/IEC 25010. RTE is a circular skill barter platform eliminating the 'Double Coincidence of Wants' by discovering closed trade cycles of length k in {2, 3, 4} on a directed multigraph using Bounded DFS. Discovered cycles are evaluated via a composite scoring function: S(C) = alpha * S_geo(C) + (1 - alpha) * S_sched(C), balancing Haversine proximity with weekly schedules, with unanimous single-veto consensus.")
+    add_para("1.1 Purpose & Product Architecture: This report describes the formal verification of RoundTable Exchange (RTE) v1.0.1-test according to ISO/IEC/IEEE 29119-3 and ISO/IEC 25010. RTE is a circular skill barter platform that eliminates the 'Double Coincidence of Wants' by finding closed trade cycles of length k in {2, 3, 4} on a directed multigraph using Bounded DFS. Discovered cycles are scored by a composite scoring function:\nS(C) = α S_geo(C) + (1 - α) S_sched(C) combining Haversine proximity and weekly schedules. Unanimous single-veto consensus.")
 
     add_heading_2("1.2 Scope of Testing")
     add_table_strict(
@@ -525,7 +525,7 @@ def generate_pdf_document():
 
     # ---------------- PAGE 2: INTRODUCTION, SCOPE & TEST ENVIRONMENT ----------------
     story.append(Paragraph("1. Introduction & Overview", style_h1))
-    story.append(Paragraph("<b>1.1 Purpose & Product Architecture:</b> This report details the formal verification of RoundTable Exchange (RTE) v1.0.1-test based on ISO/IEC/IEEE 29119-3 and ISO/IEC 25010. RTE is a circular skill barter platform eliminating the 'Double Coincidence of Wants' by discovering closed trade cycles of length k in {2, 3, 4} on a directed multigraph using Bounded DFS. Discovered cycles are evaluated via a composite scoring function: S(C) = alpha * S_geo(C) + (1 - alpha) * S_sched(C), balancing Haversine proximity with weekly schedules, with unanimous single-veto consensus.", style_body))
+    story.append(Paragraph("<b>1.1 Purpose &amp; Product Architecture:</b> This report describes the formal verification of RoundTable Exchange (RTE) v1.0.1-test according to ISO/IEC/IEEE 29119-3 and ISO/IEC 25010. RTE is a circular skill barter platform that eliminates the 'Double Coincidence of Wants' by finding closed trade cycles of length k in {2, 3, 4} on a directed multigraph using Bounded DFS. Discovered cycles are scored by a composite scoring function:<br/>S(C) = α S_geo(C) + (1 - α) S_sched(C) combining Haversine proximity and weekly schedules. Unanimous single-veto consensus.", style_body))
     story.append(Spacer(1, 3))
 
     story.append(Paragraph("1.2 Scope of Testing", style_h2))

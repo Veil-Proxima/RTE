@@ -18,13 +18,10 @@
 
 ## 1. Introduction
 
-### 1.1 Purpose
-This report provides formal, verifiable documentation of the testing activities conducted for **RoundTable Exchange (RTE)** at release version `v1.0.1-test`. It details the verification strategy, test environment, test designs, requirement traceability, execution telemetry, code coverage metrics, defect tracking, and non-functional validation in strict adherence to **ISO/IEC/IEEE 29119-3** and **ISO/IEC 25010**.
-
-### 1.2 Product Overview
-The Round Table Exchange (RTE) is a multi-party algorithmic bartering system designed to overcome the classic economic hurdle known as the *"Double Coincidence of Wants"*. Unlike traditional platforms that require rigid 1-to-1 reciprocity or introduce synthetic tokens, RTE constructs directed skill multigraphs and traverses them with a Bounded-Depth Depth-First Search (Bounded DFS) algorithm to uncover closed barter loops of length $k \in \{2, 3, 4\}$. Discovered trade cycles are scored using a composite multi-signal ranking function:
-$$S(C) = \alpha \cdot S_{\text{geo}}(C) + (1 - \alpha) \cdot S_{\text{sched}}(C)$$
-where geographic proximity ($S_{\text{geo}}$) is modeled via exponential decay over Haversine distances between Dhaka metropolitan locations, and schedule overlap ($S_{\text{sched}}$) is derived from the set intersection of weekly availability time windows. Multi-user agreements are orchestrated by an atomic state machine enforcing unanimous consensus.
+### 1.1 Purpose & Product Architecture
+This report describes the formal verification of RoundTable Exchange (RTE) v1.0.1-test according to ISO/IEC/IEEE 29119-3 and ISO/IEC 25010. RTE is a circular skill barter platform that eliminates the 'Double Coincidence of Wants' by finding closed trade cycles of length k in {2, 3, 4} on a directed multigraph using Bounded DFS. Discovered cycles are scored by a composite scoring function:
+$$S(C) = \alpha S_{\text{geo}}(C) + (1 - \alpha) S_{\text{sched}}(C)$$
+combining Haversine proximity and weekly schedules. Unanimous single-veto consensus.
 
 ### 1.3 Scope
 
