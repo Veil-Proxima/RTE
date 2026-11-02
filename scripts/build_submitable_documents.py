@@ -2,13 +2,15 @@ import os
 import docx
 from docx.shared import Inches, Pt, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.enum.section import WD_SECTION_START
 from docx.oxml import OxmlElement, parse_xml
 from docx.oxml.ns import qn, nsdecls
 
 from reportlab.lib.pagesizes import letter, A4
 from reportlab.lib import colors
 from reportlab.platypus import (
-    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable, PageBreak, Image as RLImage, KeepTogether
+    BaseDocTemplate, PageTemplate, Frame, NextPageTemplate, SimpleDocTemplate,
+    Paragraph, Spacer, Table, TableStyle, HRFlowable, PageBreak, Image as RLImage, KeepTogether
 )
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT, TA_JUSTIFY
@@ -20,10 +22,10 @@ REPORTS_DIR = os.path.join(BASE_DIR, "docs", "reports")
 os.makedirs(REPORTS_DIR, exist_ok=True)
 
 OUT_DOCX = os.path.join(REPORTS_DIR, "SOFTWARE_TEST_REPORT_SUBMISSION.docx")
-ROOT_DOCX = os.path.join(BASE_DIR, "SOFTWARE_TEST_REPORT.docx")
+ROOT_DOCX = os.path.join(BASE_DIR, "docs", "SOFTWARE_TEST_REPORT.docx")
 
 OUT_PDF = os.path.join(REPORTS_DIR, "SOFTWARE_TEST_REPORT_SUBMISSION.pdf")
-ROOT_PDF = os.path.join(BASE_DIR, "SOFTWARE_TEST_REPORT.pdf")
+ROOT_PDF = os.path.join(BASE_DIR, "docs", "SOFTWARE_TEST_REPORT.pdf")
 
 # ==============================================================================
 # 1. GENERATE WORD DOCUMENT (.DOCX) - STRICT TIMES NEW ROMAN, PURE BLACK, NO CUTOFFS
@@ -31,29 +33,14 @@ ROOT_PDF = os.path.join(BASE_DIR, "SOFTWARE_TEST_REPORT.pdf")
 def generate_word_document():
     doc = docx.Document()
     
-    # Page Setup: Standard A4, academic margins (Left 1.25 in, Right 1.0 in, Top 1.0 in, Bottom 1.0 in)
+    # Page Setup: Standard A4, Cover page has symmetric 1.0 in margins for perfect horizontal centering
     section = doc.sections[0]
     section.page_width = Inches(8.27)
     section.page_height = Inches(11.69)
     section.top_margin = Inches(1.0)
     section.bottom_margin = Inches(1.0)
-    section.left_margin = Inches(1.25)
+    section.left_margin = Inches(1.0)
     section.right_margin = Inches(1.0)
-    
-    # Configure unlinked header/footer for cover page vs body
-    # In Word, different first page allows cover page without header/footer
-    section.different_first_page_header_footer = True
-    
-    # Body Footer: Running header with Times New Roman and page numbers
-    footer = section.footer
-    f_p = footer.paragraphs[0]
-    f_p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-    f_run = f_p.add_run("RoundTable Exchange (RTE) | Software Test Report (ISO/IEC/IEEE 29119-3)  —  Page ")
-    f_run.font.name = "Times New Roman"
-    f_run.font.size = Pt(9)
-    f_run.font.color.rgb = RGBColor(0, 0, 0)
-    fld_xml = parse_xml(r'<w:fldSimple %s w:instr="PAGE"/>' % nsdecls('w'))
-    f_p._p.append(fld_xml)
 
     # Set document default fonts to strictly Times New Roman
     for s_name in ['Normal', 'Heading 1', 'Heading 2', 'Heading 3', 'Header', 'Footer']:
@@ -181,7 +168,7 @@ def generate_word_document():
     add_para("Ahmmad Abdali Khan (ID: 0432320005101118)", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=1, space_after=1, size=10.5)
     add_para("Sumaia Bintey Ismail (ID: 0432320005101103)", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=1, space_after=1, size=10.5)
     add_para("Alin (ID: 0432320005101131)", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=1, space_after=2, size=10.5)
-    add_para("Batch: CSE-54, Section: 7A", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=1, space_after=16, size=9.5, italic=True)
+    add_para("Batch: CSE-54, Section: 7B", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=1, space_after=16, size=9.5, italic=True)
 
     add_para("Submitted To:", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=4, space_after=2, size=11, bold=True)
     add_para("Dr. Mahfida Amjad Dipa", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=1, space_after=1, size=10.5, bold=True)
@@ -191,7 +178,27 @@ def generate_word_document():
 
     add_para("Date of Submission: 02 November 2026", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=6, space_after=0, size=10)
 
-    doc.add_page_break()
+    # Transition to Document Body Section with Academic Binding Margins (Left 1.25 in, Right 1.0 in)
+    body_section = doc.add_section(WD_SECTION_START.NEW_PAGE)
+    body_section.page_width = Inches(8.27)
+    body_section.page_height = Inches(11.69)
+    body_section.top_margin = Inches(1.0)
+    body_section.bottom_margin = Inches(1.0)
+    body_section.left_margin = Inches(1.25)
+    body_section.right_margin = Inches(1.0)
+    body_section.header.is_linked_to_previous = False
+    body_section.footer.is_linked_to_previous = False
+    
+    # Body Footer with Times New Roman and page numbers
+    b_footer = body_section.footer
+    b_f_p = b_footer.paragraphs[0]
+    b_f_p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+    b_f_run = b_f_p.add_run("RoundTable Exchange (RTE) | Software Test Report (ISO/IEC/IEEE 29119-3)  —  Page ")
+    b_f_run.font.name = "Times New Roman"
+    b_f_run.font.size = Pt(9)
+    b_f_run.font.color.rgb = RGBColor(0, 0, 0)
+    b_fld_xml = parse_xml(r'<w:fldSimple %s w:instr="PAGE"/>' % nsdecls('w'))
+    b_f_p._p.append(b_fld_xml)
 
     # ---------------- DOCUMENT CONTROL ----------------
     add_heading_1("Document Control")
@@ -435,14 +442,36 @@ def generate_word_document():
 # ==============================================================================
 def generate_pdf_document():
     from reportlab.lib.units import inch
-    doc = SimpleDocTemplate(
-        OUT_PDF,
-        pagesize=A4,
-        leftMargin=1.25 * inch,
-        rightMargin=1.0 * inch,
-        topMargin=1.0 * inch,
-        bottomMargin=1.0 * inch
+    page_w, page_h = A4
+
+    # Template 1: Cover Page with symmetric 1.0 in margins for perfect horizontal centering
+    cover_frame = Frame(
+        1.0 * inch, 1.0 * inch,
+        page_w - 2.0 * inch, page_h - 2.0 * inch,
+        id='cover_frame',
+        leftPadding=0, rightPadding=0, topPadding=0, bottomPadding=0
     )
+    cover_template = PageTemplate(id='Cover', frames=[cover_frame])
+
+    # Template 2: Body Pages with academic binding margin (Left 1.25 in, Right 1.0 in) and footer
+    body_frame = Frame(
+        1.25 * inch, 1.0 * inch,
+        page_w - 2.25 * inch, page_h - 2.0 * inch,
+        id='body_frame',
+        leftPadding=0, rightPadding=0, topPadding=0, bottomPadding=0
+    )
+
+    def draw_body_footer(canvas, d):
+        canvas.saveState()
+        canvas.setFont("Times-Roman", 9)
+        canvas.setFillColor(colors.black)
+        footer_text = f"RoundTable Exchange (RTE) | Software Test Report (ISO/IEC/IEEE 29119-3)  —  Page {d.page}"
+        canvas.drawRightString(page_w - 1.0 * inch, 0.6 * inch, footer_text)
+        canvas.restoreState()
+
+    body_template = PageTemplate(id='Body', frames=[body_frame], onPage=draw_body_footer)
+
+    doc = BaseDocTemplate(OUT_PDF, pagesize=A4, pageTemplates=[cover_template, body_template])
 
     styles = getSampleStyleSheet()
 
@@ -520,7 +549,7 @@ def generate_pdf_document():
     story.append(Paragraph("Ahmmad Abdali Khan (ID: 0432320005101118)", style_center))
     story.append(Paragraph("Sumaia Bintey Ismail (ID: 0432320005101103)", style_center))
     story.append(Paragraph("Alin (ID: 0432320005101131)", style_center))
-    story.append(Paragraph("<i>Batch: CSE-54, Section: 7A</i>", style_center))
+    story.append(Paragraph("<i>Batch: CSE-54, Section: 7B</i>", style_center))
     story.append(Spacer(1, 16))
 
     story.append(Paragraph("<b>Submitted To:</b>", style_center_bold))
@@ -532,6 +561,7 @@ def generate_pdf_document():
 
     story.append(Paragraph("Date of Submission: 02 November 2026", style_center))
 
+    story.append(NextPageTemplate('Body'))
     story.append(PageBreak())
 
     # Helper function for PDF Tables

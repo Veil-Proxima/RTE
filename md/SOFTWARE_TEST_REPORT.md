@@ -6,7 +6,7 @@
 | Field | Detail |
 |---|---|
 | **Project** | **RoundTable Exchange (RTE): Multi-Party Circular Skill & Barter Trading Platform** |
-| **Team ID** | **Batch: CSE-54, Section: 7A** |
+| **Team ID** | **Batch: CSE-54, Section: 7B** |
 | **Member 1** | `0432320005101118` — **Ahammed Abdali Khan** — Developer & Reviewer |
 | **Member 2** | `0432320005101103` — **Sumaia Bintey Ismail** — Developer & Test Lead |
 | **Member 3** | `0432320005101131` — **Alin** — Developer & Quality Analyst |

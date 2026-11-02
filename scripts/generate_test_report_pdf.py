@@ -73,23 +73,20 @@ def generate_pdf():
     story = []
 
     # Title Banner
-    story.append(Paragraph("CSE0613316 Software Project Design and Development (Lab)", style_course))
-    story.append(Spacer(1, 3))
+    story.append(Paragraph("CSE 416: Software Project Design and Development (Lab)", style_course))
+    story.append(Spacer(1, 4))
     story.append(Paragraph("Software Test Report", style_title))
-    story.append(Spacer(1, 2))
-    story.append(Paragraph("Test plan, test cases and results (based on ISO/IEC/IEEE 29119-3 & ISO/IEC 25010)", style_subtitle))
     story.append(Spacer(1, 8))
 
     # Meta Table
     meta_data = [
         [Paragraph("<b>Project</b>", style_cell_bold), Paragraph("RoundTable Exchange (RTE): Multi-Party Circular Skill & Barter Trading Platform", style_cell)],
-        [Paragraph("<b>Team ID</b>", style_cell_bold), Paragraph("Batch: CSE-54, Section: 7A", style_cell)],
+        [Paragraph("<b>Team ID</b>", style_cell_bold), Paragraph("Batch: CSE-54, Section: 7B", style_cell)],
         [Paragraph("<b>Member 1</b>", style_cell_bold), Paragraph("0432320005101118 — Ahammed Abdali Khan — Developer & Reviewer", style_cell)],
         [Paragraph("<b>Member 2</b>", style_cell_bold), Paragraph("0432320005101103 — Sumaia Bintey Ismail — Developer & Test Lead", style_cell)],
         [Paragraph("<b>Member 3</b>", style_cell_bold), Paragraph("0432320005101131 — Alin — Developer & Quality Analyst", style_cell)],
         [Paragraph("<b>Experiment</b>", style_cell_bold), Paragraph("Exp 9 (v1.0) / Exp 10 (v1.1)", style_cell)],
-        [Paragraph("<b>Instructor</b>", style_cell_bold), Paragraph("Al Imtiaz, Associate Professor, Dept. of CSE, UITS", style_cell)],
-        [Paragraph("<b>Supervisor</b>", style_cell_bold), Paragraph("Dr. Mahfida Amjad Dipa, Dept. of CSE, UITS", style_cell)],
+        [Paragraph("<b>Submitted To</b>", style_cell_bold), Paragraph("Dr. Mahfida Amjad Dipa, Dept. of CSE, UITS", style_cell)],
         [Paragraph("<b>Submitted</b>", style_cell_bold), Paragraph("02 November 2026", style_cell)]
     ]
     t_meta = Table(meta_data, colWidths=[100, 440])

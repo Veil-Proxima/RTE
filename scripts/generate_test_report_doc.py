@@ -134,26 +134,22 @@ def create_report_docx():
 
     # ---------------- DOCUMENT CONTENT ----------------
     # Header Banner
-    p_course = add_p("CSE0613316 Software Project Design and Development (Lab)", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=0, space_after=2)
+    p_course = add_p("CSE 416: Software Project Design and Development (Lab)", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=0, space_after=2)
     style_run(p_course.runs[0], "Calibri", 11, bold=True, color=COLOR_MUTED)
 
-    p_title = add_p("Software Test Report", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=2, space_after=2)
+    p_title = add_p("Software Test Report", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=2, space_after=8)
     style_run(p_title.runs[0], "Calibri", 20, bold=True, color=COLOR_PRIMARY)
-
-    p_sub = add_p("Test plan, test cases and results (based on ISO/IEC/IEEE 29119-3 & ISO/IEC 25010)", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=0, space_after=10)
-    style_run(p_sub.runs[0], "Calibri", 10, italic=True, color=COLOR_BRAND)
 
     # Document Header Table
     meta_headers = ["Attribute", "Specification Details"]
     meta_rows = [
         ["Project", "RoundTable Exchange (RTE): Multi-Party Circular Skill & Barter Trading Platform"],
-        ["Team ID", "Batch: CSE-54, Section: 7A"],
+        ["Team ID", "Batch: CSE-54, Section: 7B"],
         ["Member 1", "0432320005101118 - Ahammed Abdali Khan - Developer & Reviewer"],
         ["Member 2", "0432320005101103 - Sumaia Bintey Ismail - Developer & Test Lead"],
         ["Member 3", "0432320005101131 - Alin - Developer & Quality Analyst"],
         ["Experiment", "Exp 9 (v1.0) / Exp 10 (v1.1)"],
-        ["Instructor", "Al Imtiaz, Associate Professor, Dept. of CSE, UITS"],
-        ["Project Supervisor", "Dr. Mahfida Amjad Dipa, Dept. of CSE, UITS"],
+        ["Submitted To", "Dr. Mahfida Amjad Dipa, Dept. of CSE, UITS"],
         ["Submitted Date", "02 November 2026"]
     ]
     create_table(meta_headers, meta_rows, [1.8, 5.2])
