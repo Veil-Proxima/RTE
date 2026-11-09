@@ -3,7 +3,9 @@
  * Supports both Live FastAPI Backend and Standalone In-Browser Engine (for GitHub Pages).
  */
 
-const API_BASE = window.location.origin.includes('http') && !window.location.origin.includes('github.io') ? window.location.origin : '';
+const API_BASE = (window.location.hostname === 'trte.duckdns.org' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ? window.location.origin
+  : 'https://trte.duckdns.org';
 let isStandaloneMode = false;
 
 // Sample Taxonomy and Preset Data for Standalone Mode
