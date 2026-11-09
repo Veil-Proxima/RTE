@@ -57,6 +57,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 function setupEventListeners() {
+  // Window Resize Auto-Refit for Vis.js Canvas
+  let resizeTimer = null;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      if (graphVisualizer && appState.activeTab === 'tab-explorer') {
+        graphVisualizer.fit();
+      }
+    }, 150);
+  });
+
   // Navigation Tabs
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
