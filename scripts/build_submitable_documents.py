@@ -174,35 +174,36 @@ def generate_word_document():
         doc.add_paragraph().paragraph_format.space_after = Pt(2)
         return table
 
-    # ---------------- PAGE 1: COVER PAGE (PROPORTIONALLY BALANCED) ----------------
-    add_para("UNIVERSITY OF INFORMATION TECHNOLOGY AND SCIENCES (UITS)", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=16, space_after=3, size=15, bold=True)
-    add_para("DEPARTMENT OF COMPUTER SCIENCE AND ENGINEERING", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=0, space_after=2, size=14, bold=True)
-    add_para("DHAKA, BANGLADESH", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=0, space_after=30, size=12, bold=False)
+    # ---------------- PAGE 1: COVER PAGE (PROPORTIONALLY BALANCED VERTICAL SPACING) ----------------
+    add_para("UNIVERSITY OF INFORMATION TECHNOLOGY AND SCIENCES (UITS)", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=24, space_after=4, size=15, bold=True)
+    add_para("DEPARTMENT OF COMPUTER SCIENCE AND ENGINEERING", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=0, space_after=3, size=14, bold=True)
+    add_para("DHAKA, BANGLADESH", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=0, space_after=34, size=12, bold=False)
 
     if os.path.exists(LOGO_PATH):
         p_logo = doc.add_paragraph()
         p_logo.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        p_logo.paragraph_format.space_before = Pt(4)
-        p_logo.paragraph_format.space_after = Pt(30)
-        p_logo.add_run().add_picture(LOGO_PATH, width=Inches(1.8))
+        p_logo.paragraph_format.space_before = Pt(0)
+        p_logo.paragraph_format.space_after = Pt(34)
+        p_logo.paragraph_format.line_spacing = 1.0
+        p_logo.add_run().add_picture(LOGO_PATH, width=Inches(1.65))
 
-    add_para("CSE 416: Software Project Design and Development (Lab)", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=4, space_after=6, size=13, bold=True)
-    add_para("SOFTWARE TEST REPORT", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=4, space_after=10, size=20, bold=True)
-    add_para("The Round Table Exchange (RTE): A Multi-Party Skill Barter Network with Graph-Based Cycle Matching", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=4, space_after=38, size=14, bold=True)
+    add_para("CSE 416: Software Project Design and Development (Lab)", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=0, space_after=8, size=13, bold=True)
+    add_para("SOFTWARE TEST REPORT", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=0, space_after=10, size=20, bold=True)
+    add_para("The Round Table Exchange (RTE): A Multi-Party Skill Barter Network with Graph-Based Cycle Matching", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=0, space_after=36, size=14, bold=True)
 
-    add_para("Submitted By:", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=4, space_after=3, size=13, bold=True)
+    add_para("Submitted By:", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=0, space_after=4, size=13, bold=True)
     add_para("Ahmmad Abdali Khan (ID: 0432320005101118)", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=2, space_after=2, size=12.5)
     add_para("Sumaia Bintey Ismail (ID: 0432320005101103)", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=2, space_after=2, size=12.5)
     add_para("Alin (ID: 0432320005101131)", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=2, space_after=2, size=12.5)
-    add_para("Batch: CSE-54, Section: 7B", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=2, space_after=30, size=11.5, italic=True)
+    add_para("Batch: CSE-54, Section: 7B", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=2, space_after=34, size=11.5, italic=True)
 
-    add_para("Submitted To:", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=4, space_after=3, size=13, bold=True)
+    add_para("Submitted To:", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=0, space_after=4, size=13, bold=True)
     add_para("Dr. Mahfida Amjad Dipa", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=2, space_after=2, size=12.5, bold=True)
     add_para("Assistant Professor", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=2, space_after=2, size=12)
     add_para("Department of Computer Science and Engineering", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=2, space_after=2, size=12)
-    add_para("University of Information Technology and Sciences (UITS)", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=2, space_after=48, size=12)
+    add_para("University of Information Technology and Sciences (UITS)", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=2, space_after=50, size=12)
 
-    add_para("Date of Submission: 02 November 2026", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=6, space_after=0, size=12)
+    add_para("Date of Submission: 02 November 2026", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=0, space_after=0, size=12)
 
     # Transition to Document Body Section with Academic Binding Margins (Left 1.25 in, Right 1.0 in)
     body_section = doc.add_section(WD_SECTION_START.NEW_PAGE)
@@ -452,18 +453,19 @@ def generate_pdf_document():
     story = []
 
     # ---------------- PAGE 1: COVER PAGE (PROPORTIONALLY BALANCED VERTICAL SPACING) ----------------
+    story.append(Spacer(1, 20))
     story.append(Paragraph("<b>UNIVERSITY OF INFORMATION TECHNOLOGY AND SCIENCES (UITS)</b>", style_center_bold))
     story.append(Spacer(1, 4))
     story.append(Paragraph("<b>DEPARTMENT OF COMPUTER SCIENCE AND ENGINEERING</b>", style_center_bold))
     story.append(Spacer(1, 3))
     story.append(Paragraph("DHAKA, BANGLADESH", style_center))
-    story.append(Spacer(1, 30))
+    story.append(Spacer(1, 32))
 
     if os.path.exists(LOGO_PATH):
-        img = RLImage(LOGO_PATH, width=1.8*inch, height=1.8*inch)
+        img = RLImage(LOGO_PATH, width=1.65*inch, height=1.65*inch)
         img.hAlign = 'CENTER'
         story.append(img)
-        story.append(Spacer(1, 30))
+        story.append(Spacer(1, 32))
 
     story.append(Paragraph("<b>CSE 416: Software Project Design and Development (Lab)</b>", style_center_bold))
     story.append(Spacer(1, 8))
@@ -471,7 +473,7 @@ def generate_pdf_document():
     story.append(Spacer(1, 10))
 
     story.append(Paragraph("<b>The Round Table Exchange (RTE): A Multi-Party Skill Barter Network with Graph-Based Cycle Matching</b>", style_center_bold))
-    story.append(Spacer(1, 38))
+    story.append(Spacer(1, 36))
 
     story.append(Paragraph("<b>Submitted By:</b>", style_center_bold))
     story.append(Spacer(1, 4))
@@ -479,7 +481,7 @@ def generate_pdf_document():
     story.append(Paragraph("Sumaia Bintey Ismail (ID: 0432320005101103)", style_center))
     story.append(Paragraph("Alin (ID: 0432320005101131)", style_center))
     story.append(Paragraph("<i>Batch: CSE-54, Section: 7B</i>", style_center_it))
-    story.append(Spacer(1, 30))
+    story.append(Spacer(1, 34))
 
     story.append(Paragraph("<b>Submitted To:</b>", style_center_bold))
     story.append(Spacer(1, 4))
@@ -487,7 +489,7 @@ def generate_pdf_document():
     story.append(Paragraph("Assistant Professor", style_center))
     story.append(Paragraph("Department of Computer Science and Engineering", style_center))
     story.append(Paragraph("University of Information Technology and Sciences (UITS)", style_center))
-    story.append(Spacer(1, 48))
+    story.append(Spacer(1, 50))
 
     story.append(Paragraph("Date of Submission: 02 November 2026", style_center))
 
